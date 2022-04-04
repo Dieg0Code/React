@@ -1,19 +1,19 @@
-import logo from './logo.svg';
-import './App.css';
-
-const LI = ({ children, estado }) => {
-  return (
-    <li className='clase-li'>{children} = {estado}</li>
-  );
-}
+import Button from "./Button";
 
 const App = () => {
-  const valor = 'Waton';
-  return (
-    <ul>
-      <LI estado="feliz">valor de li</LI>
-    </ul>
-  );
+  const miVariable = false;
+
+  if(miVariable) {
+    return <p>Mi variable es true</p>
+  }
+  return(
+    <div>
+      <h1>Hola Mundo</h1>
+      <Button onClick={() => console.log('click')}>
+        Enviar
+      </Button>
+    </div>
+  )
 }
 
 export default App;

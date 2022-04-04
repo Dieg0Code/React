@@ -55,7 +55,7 @@ ReactDOM.render(
 
 La etiqueta ``<p>Hello World</p>`` no es exactamente HTML, sino que es algo propio de React que se llama ``JSX``, el cual es muy similar a HTML, pero podemos usarlo junto con JavaScript.
 
-Pero si dejamos el código así tal cual no es muy reutilizable, ademas de que no podemos pasarle ningún argumento a la etiqueta, por lo que no podemos usarlo en una aplicación real.
+Si dejamos el código así tal cual no es muy reutilizable, ademas de que no podemos pasarle ningún argumento a la etiqueta, por lo que no podemos usarlo en una aplicación real.
 
 Una buena forma sería así:
 
@@ -152,3 +152,209 @@ const App = () => {
 ```
 
 La razón de que creemos componentes que hace lo mismo que un elemento HTML primitivo es que podemos asignarle mas comportamiento o incluso también estilos.
+
+### Agregando estilos a los componentes con inline style
+
+Un inline style es cuando en nuestro componente usamos la propiedad ``style`` y le pasamos un objeto javascript.
+
+```js
+const estilo = {
+  backgroundColor: 'red',
+  color: '#fff',
+  padding: '10px 15px',
+}
+
+const LI = ({children}) => {
+  return (
+    <li style={estilo} className="clase-css"> {children} </li>
+  )
+}
+```
+
+Podemos asignarle a este objeto todas o casi todas las propiedades de css que conocemos para darle un estilo al componente LI.
+
+A diferencia del CSS común, el cual separa las palabras con un guión, en React se hace con camelCase (``backgroundColor`` en vez de ``background-color``).
+
+También al ser un objeto javascript podemos usar arrow functions para pasarle argumentos al estilo.
+
+```js
+const estilo = ({ bg = '#222' }) => ({
+  backgroundColor: bg,
+  color: '#fff',
+  padding: '10px 15px',
+  margin: '10px 15px',
+});
+```
+
+Incluso podemos combinar estilos con la ayuda del spread operator ``...``.
+
+```js
+import logo from './logo.svg';
+import './App.css';
+
+const estilo2 = {
+  boxShadow: '0 5 3px rgba(0,0,0,0.)',
+}
+
+const estilo = ({ bg = '#222' }) => ({
+  backgroundColor: bg,
+  color: '#fff',
+  padding: '10px 15px',
+  margin: '10px 15px',
+});
+
+const LI = ({ children, estado }) => {
+  return (
+    <li style={{...estilo2, ...estilo({ bg: '#333' })}} className='clase-li'>{children} = {estado}</li>
+  );
+}
+
+const App = () => {
+  const valor = 'Waton';
+  return (
+    <ul style={estilo({ bg: '#750' })} className='clase-css'>
+      <LI estado="feliz">valor de li</LI>
+    </ul>
+  );
+}
+
+export default App;
+```
+
+### Agregando estilos con clases de CSS
+
+Podemos poner los estilos en un archivo diferente y después importarlo donde lo necesitemos.
+
+```js
+import './main.css';
+```
+
+Dentro de ``main.css`` escribimos el css que luego importamos.
+
+```css
+.clase-li {
+    background-color: #057;
+}
+```
+
+```js
+const LI = ({ children, estado }) => {
+  return (
+    <li className='clase-li'>{children} = {estado}</li>
+  );
+}
+```
+
+### Reutilizando componentes con estilo
+
+Una practica muy recurrente con React es la reutilización de componentes pequeños que ya tienen un estilo predefinido.
+
+Por ejemplo creamos el componente ``Button`` en un nuevo archivo ``Button.js``.
+
+```js
+import './Button.css';
+
+const Button = (props) => {
+    return(
+        <button {...props} className="btn" />
+    )
+}
+
+export default Button;
+```
+
+Le damos estilos al componente ``Button`` en ``Button.css``.
+
+
+```css
+.btn {
+    transition: all 0.3s ease-in-out;
+    background-color: #057;
+    color: white;
+    border: none;
+    padding: 15px 25px;
+}
+
+.btn:hover {
+    background-color: #750;   
+}
+```
+
+Luego en la ``App``, importamos el componente ``Button``.
+
+```js
+import Button from "./Button";
+
+const App = () => {
+  return(
+    <div>
+      <h1>Hola Mundo</h1>
+      <Button onClick={() => console.log('click')}>
+        Enviar
+      </Button>
+    </div>
+  )
+}
+
+export default App;
+```
+
+De esta forma separamos un componente pequeño, le damos su estilo y lo exportamos. Luego en la ``App``, importamos el componente y le damos un comportamiento como ``onClick``.
+
+### Componentes interactivos
+
+Con ``onClick`` podemos hacer que los componentes y también elementos HTML tengan comportamiento interactivos. Al darle este comportamiento podemos ver si el usuario hizo click manteniendo alguna tecla presionada.
+
+```js
+<h1 onClick={(e) => console.log('click', e)}>Hola Mundo</h1>
+```
+
+### Renderizado condicional
+
+Por ahora solo hemos visto como renderizar componentes o elementos JSX directamente, sin una validación previa. La validación previa es algo que se ocupa mucho cuando estamos trabajando con rutas o cuando queremos mostrar cosas cuando el usuario por ejemplo ha iniciado sesión o no, vamos a cambiar el botón de iniciar sesión por algo como "ir a mi panel de administración", "ir a mi perfil" o en vez de decir "hola usuario" lo cambiamos por "hola" + nombre del usuario.
+
+```js
+import Button from "./Button";
+
+const App = () => {
+  const miVariable = false;
+
+  if(miVariable) {
+    return <p>Mi variable es true</p>
+  }
+  return(
+    <div>
+      <h1>Hola Mundo</h1>
+      <Button onClick={() => console.log('click')}>
+        Enviar
+      </Button>
+    </div>
+  )
+}
+
+export default App;
+```
+
+De esta forma, si ``miVariable`` fuese ``true``, el componente ``Button`` no se renderizaría, en vez de eso, se renderizaría el componente ``p``.
+
+Esto lo podemos ocupar mas adelante para renderizar un componente u otro dependiendo de una condición, en este caso es ``miVariable``, pero pueden ser valores como si el usuario ha iniciado sesión, si esta visitando cierta ruta o lo que nosotros queramos.
+
+### Listas y sus Keys en React
+
+En React cuando trabajamos con listas que vamos a imprimir, que vienen de un array o de una colección de objetos, tenemos que indicar un valor único para poder identificar la fila que queremos renderizar, esto es para que React pueda saber cual es el elemento que tiene que renderizar en caso de que este llegase a cambiar.
+  
+```js
+const arr = [
+  "uno",
+  "dos",
+  "tres",
+]
+
+const App = () => {
+  return(
+    <div>
+      <h1 onClick={(e) => console.log('click')}>Hola mundo</h1>
+      {arr.map(e => <p> {e} </p>)}
+    </div>
+  )
+}
