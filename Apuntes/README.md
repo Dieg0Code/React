@@ -492,3 +492,23 @@ class App extends Component {
 
 export default App;
 ```
+
+### El ciclo de vida de los componentes
+
+Un componente tiene 3 estado principales:
+
+- Montando
+- Actualizando
+- Desmontando
+
+`Montando` es cuando estamos insertando en nuestra interfaz un componente por primera vez. Cuando ejecutamos un componente por primera vez, lo primero que se ejecutará es el `constructor()` del componente. El constructor se utiliza en React para que nosotros podamos inicializar o settear propiedades en el estado por defecto.
+
+También podemos utilizar el constructor si es que queremos pasar el contexto de `this` a una función.
+
+Luego de que nuestro componente se ha montado, lo primero que va a ocurrir es que se ejecutará el método de `render()`, luego de eso React se encargará de actualizar el DOM.
+
+Después de eso, si es que nosotros implementamos el método de `componentDidMount()` va a ejecutar toda la lógica que nosotros pusimos en él.
+
+`Actualizando`. Como vimos un componente se actualiza cuando llamaos a su método `setState()` o cuando el método `render()` de un componente padre se ejecuta, luego de eso react se encargará de actualizar el DOM, y por último, el método que se ejecutará una vez nuestro componente se ha actualizado es `componentDidUpdate()`, la diferencia entre `componentDidMount()` y `componentDidUpdate()` es que `componentDidMount()` se ejecuta solo una vez, y `componentDidUpdate()` se ejecuta múltiples veces, siempre que se actualice el componente.
+
+`Desmontando`, esto es cuando ya no vamos a mostrar al usuario algún componente que hayamos definido, como en el caso del renderizado condicional, siempre que decidamos que un componente ya no va a ser mostrado, pasará por el proceso de desmontado, luego de eso, el método `componentWillUnmount()` se ejecutará.
