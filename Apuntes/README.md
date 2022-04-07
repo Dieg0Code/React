@@ -446,3 +446,49 @@ class App extends Component {
   }
 }
 ```
+
+### ¿Cuando se renderiza un componente?
+
+Como se dijo anteriormente, el método `render()` de un componente se ejecuta en dos condiciones:
+
+1. Cuando el estado del componente cambia.
+2. Cuando el método `render()` de un componente padre se ejecuta, por ende, los componentes hijos también ejecutan su método `render()`.
+
+Por ejemplo, si creo un nuevo componente llamado `Button` y lo uso en mi componente `App`, entonces el método `render()` de `Button` se ejecuta cuando método `render()` de `App` se ejecuta.
+
+```js
+import { Component } from 'react';
+
+class Button extends Component {
+  render() {
+    console.log('Ejecutando render de Button');
+    return(
+      <button>
+        Hola
+      </button>
+    )
+  }
+}
+
+class App extends Component {
+  state = {
+    valor: 3
+  }
+  render() {
+    console.log(this.state.valor);
+    return(
+      <div>
+        <p>Hola</p>
+        <Button/>
+        <button 
+          onClick={() => this.setState({valor: this.state.valor + 1})}
+        >
+          Incrementar valor en 1
+        </button>
+      </div>
+    )
+  }
+}
+
+export default App;
+```
