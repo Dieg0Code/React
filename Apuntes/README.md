@@ -151,7 +151,7 @@ const App = () => {
 }
 ```
 
-La razón de que creemos componentes que hace lo mismo que un elemento HTML primitivo es que podemos asignarle mas comportamiento o incluso también estilos.
+La razón de que creemos componentes que hacen lo mismo que un elemento HTML primitivo es que podemos asignarle mas comportamiento o incluso también estilos.
 
 ### Agregando estilos a los componentes con inline style
 
@@ -337,7 +337,7 @@ export default App;
 
 De esta forma, si ``miVariable`` fuese ``true``, el componente ``Button`` no se renderizaría, en vez de eso, se renderizaría el componente ``p``.
 
-Esto lo podemos ocupar mas adelante para renderizar un componente u otro dependiendo de una condición, en este caso es ``miVariable``, pero pueden ser valores como si el usuario ha iniciado sesión, si esta visitando cierta ruta o lo que nosotros queramos.
+Esto lo podemos ocupar mas adelante para renderizar un componente u otro dependiendo de una condición, en este caso es ``miVariable``, pero pueden ser valores como si el usuario ha iniciado sesión, si está visitando cierta ruta o lo que nosotros queramos.
 
 ### Listas y sus Keys en React
 
@@ -353,8 +353,96 @@ const arr = [
 const App = () => {
   return(
     <div>
-      <h1 onClick={(e) => console.log('click')}>Hola mundo</h1>
-      {arr.map(e => <p> {e} </p>)}
+      <h1 onClick={(el) => console.log('click')}>Hola mundo</h1>
+      {arr.map(el => <p> {el} </p>)}
     </div>
   )
 }
+```
+
+## Componentes Basados en Clases
+
+### Anatomía de un componente basado en clases
+
+Un componente basado en clases es un componente que es declarado usando una clase y que tiene una función ``render()``.
+
+```js
+import { Component } from 'react';
+
+class App extends Component {
+  render() {
+    return(
+      <p>Hola mundo</p>
+    )
+  }
+}
+
+export default App;
+```
+
+Con `extends Component` indicamos que la clase hereda de `Component` y que será un componente de React. Dentro de esta clase debemos usar el método ``render()`` para renderizar el componente. Este método siempre debe estar cada vez que creamos un componente.
+
+### El state
+
+Para poder hacer que un componente basado en clases sea dinámico, debemos saber que es el estado de un componente.
+
+El estado es algo a lo que podemos acceder directamente desde los componentes que son creados usando clases.
+
+*En los componentes funcionales también podemos acceder al estado, pero esto se hace mediante hooks.*
+
+```js
+import {Component} from 'react';
+
+class App extends Component {
+  state = {
+    texto: 'Hola mundo'
+  }
+
+  render() {
+    return(
+      <p>{this.state.texto}</p>
+    )
+  }
+}
+```
+
+El método ``render()`` está de cierta forma relacionado con el state, este se ejecuta siempre en dos condiciones:
+
+1. Cuando el estado del componente cambia.
+2. Cuando el método `render()` de un componente padre se ejecuta, por ende, los componentes hijos también ejecutan su método `render()`.
+
+Entonces, se ejecuta cuando llamamos a `this.setState()` o cuando el método `render()` de un componente padre se ejecuta.
+
+El estado de un componente es un objeto llamado ``state``.
+
+```js
+state = {
+  texto: 'Hola mundo'
+}
+```
+
+La propiedad de `state` que tienen los componentes es algo que depende únicamente de ellos mismos, nosotros ademas, podemos pasar el estado de un componente hacia abajo, a componentes hijos.
+
+```js
+import { Component } from 'react';
+
+class App extends Component {
+  state = {
+    valor: 3
+  }
+
+  render() {
+    return(
+      console.log(this.state.valor);
+      <div>
+        <p>Hola</p>
+        <button 
+          onClick={() => this.setState({valor: this.state.valor + 1})}
+        >
+          Incrementar valor en 1
+        </button>
+      </div>
+    )
+  }
+}
+```

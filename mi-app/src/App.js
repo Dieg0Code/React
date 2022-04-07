@@ -1,19 +1,22 @@
-import Button from "./Button";
+import { Component } from 'react';
 
-const App = () => {
-  const miVariable = false;
-
-  if(miVariable) {
-    return <p>Mi variable es true</p>
+class App extends Component {
+  state = {
+    valor: 3
   }
-  return(
-    <div>
-      <h1>Hola Mundo</h1>
-      <Button onClick={() => console.log('click')}>
-        Enviar
-      </Button>
-    </div>
-  )
+  render() {
+    console.log(this.state.valor);
+    return(
+      <div>
+        <p>Hola</p>
+        <button 
+          onClick={() => this.setState({valor: this.state.valor + 1})}
+        >
+          Incrementar valor en 1
+        </button>
+      </div>
+    )
+  }
 }
 
 export default App;
