@@ -668,3 +668,129 @@ export default App;
 ```
 
 De esta manera estamos cada vez que escribamos dentro de nuestro componente `Input` vamos a actualizar el estado de nuestro componente `App` y de esta manera poder acceder a los valores de los componentes `Input` desde el componente `App`.
+
+### Preguntas sobre métodos y propiedades de los componentes
+
+¿Porque en vez de crear un método, creamos propiedades a las cuales le asignamos una fat arrow function?.
+
+Esto es porque hay una diferencia entre usar una fat arrow function y un método normal, esta diferencia radica en el contexto, el `this`.
+
+Podemos ejemplificarlo con un ejemplo:
+
+```js
+import { Component } from 'react';
+
+class Input extends Component {
+  render() {
+    return(
+      <input
+        value={this.props.value}
+        onChange={this.props.onChange}
+      />
+    )
+  }
+}
+
+class App extends Component {
+  state = {
+    nombre: '',
+    apellido: ''
+  }
+
+  updateNombre = (value) => {
+    this.updateValues('nombre', value.target.value);
+  }
+
+  updateValues = (prop, value) => {
+    this.setState({ [prop]: value });
+  }
+
+  render() {
+    return(
+      <p>
+        Nombre completo: {`${this.state.nombre} ${this.state.apellido}`}
+        <Input
+          value={this.state.nombre}
+          onChange={this.updateNombre}
+        />
+        <Input
+          value={this.state.apellido}
+          onChange={e => this.updateValues('apellido', e.target.value)}
+        />
+      </p>
+    )
+  }
+}
+
+export default App;
+```
+
+Creamos un nuevo método:
+
+```js
+updateNombre = (value) => {
+  this.updateValues('nombre', value.target.value);
+}
+```
+
+Y un poco la propiedad `onChange` del primer `Input`:
+
+```js
+<Input
+  value={this.state.nombre}
+  onChange={this.updateNombre}
+/>
+```
+
+Si intentamos usar este código nos arrojará error, `Cannot read property 'updateValues' of undefined`.
+
+Si intentamos imprimir por consola el valor de `this` nos arrojará `undefined`.
+
+La razón de este error es que el contexto de `this` de los métodos cambia cuando estamos pasando el método directamente aun componente hijo.
+
+```js
+<Input
+  value={this.state.nombre}
+  onChange={this.updateNombre}
+/>
+```
+
+`this.updateNombre` es nuestro método, pero dentro de este ya no podemos llamar a `this` porque se perdió el contexto al pasarlo a el componente hijo.
+
+Para solucionar este problema podemos hacerlo de varias maneras:
+
+La forma más sencilla es usar una fat arrow function.
+
+```js
+updateNombre = (value) => {
+  this.updateValues('nombre', value.target.value);
+}
+```
+
+Otra forma es:
+
+```js
+updateNombre {
+  this.updateValues('nombre', value.target.value);
+}
+```
+
+```js
+<Input
+  value={this.state.nombre}
+  onChange={(arg) => this.updateNombre(arg)}
+/>
+```
+
+Otra forma es hacer bind de this a nuestro método en el constructor:
+
+```js
+constructor(props) {
+  super(props);
+  this.updateNombre = this.updateNombre.bind(this);
+}
+```
+
+De esta forma nos aseguramos que el contexto de `this` será App.
+
+Son varias formas de hacer lo mismo, pero como podemos ver obviamente la forma más sencilla es usar una fat arrow function.
