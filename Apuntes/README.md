@@ -512,3 +512,43 @@ Después de eso, si es que nosotros implementamos el método de `componentDidMou
 `Actualizando`. Como vimos un componente se actualiza cuando llamaos a su método `setState()` o cuando el método `render()` de un componente padre se ejecuta, luego de eso react se encargará de actualizar el DOM, y por último, el método que se ejecutará una vez nuestro componente se ha actualizado es `componentDidUpdate()`, la diferencia entre `componentDidMount()` y `componentDidUpdate()` es que `componentDidMount()` se ejecuta solo una vez, y `componentDidUpdate()` se ejecuta múltiples veces, siempre que se actualice el componente.
 
 `Desmontando`, esto es cuando ya no vamos a mostrar al usuario algún componente que hayamos definido, como en el caso del renderizado condicional, siempre que decidamos que un componente ya no va a ser mostrado, pasará por el proceso de desmontado, luego de eso, el método `componentWillUnmount()` se ejecutará.
+
+### Montando componentes
+
+```js
+import { Component } from 'react';
+
+class Button extends Component {
+  state = {}
+  constructor(props) {
+    super(props);
+    console.log('constructor de Button', props);
+  }
+
+  componentDidMount() {
+    console.log('componentDidMount');
+  }
+
+  render() {
+    console.log('Ejecutando render de Button');
+    return(
+      <button>
+        Hola
+      </button>
+    )
+  }
+}
+```
+
+Como vimos anteriormente, lo primero que se ejecuta en el montado de un componente es el constructor de este. Este constructor recibe como argumento las `props` que le pasamos al componente, pero, como estamos extendiendo de `Component` y la clase es en realidad un componente, debemos usar `super()` para pasar las props al constructor de `Component`.
+
+```js
+constructor(props) {
+  super(props);
+  console.log('constructor de Button', props);
+}
+```
+
+El método de `componentDidMount()` no recibe ningún argumento y por lo general se usa cuando debemos llamar a `setState()` para poder actualizar el estado de nuestro componente. Se ejecuta al final, después del constructor y después de renderizar el componente.
+
+Este método lo tenemos que utilizar si es que queremos evaluar algo del DOM, para ver si queremos mostrar un modal o algo así. También lo podemos utilizar cuando queremos iniciar llamados AJAX para poder traer datos de una API.

@@ -1,6 +1,16 @@
 import { Component } from 'react';
 
 class Button extends Component {
+  state = {}
+  constructor(props) {
+    super(props);
+    console.log('constructor de Button', props);
+  }
+
+  componentDidMount() {
+    console.log('componentDidMount');
+  }
+
   render() {
     console.log('Ejecutando render de Button');
     return(
@@ -20,7 +30,7 @@ class App extends Component {
     return(
       <div>
         <p>Hola</p>
-        <Button/>
+        <Button perro='waton'/>
         <button 
           onClick={() => this.setState({valor: this.state.valor + 1})}
         >
