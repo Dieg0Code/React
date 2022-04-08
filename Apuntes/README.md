@@ -576,3 +576,95 @@ componentWillUnmount() {
 ```
 
 Para desmontar un componente podemos hacer uso del renderizado condicional.
+
+### Subiendo el estado
+
+```js
+import { Component } from 'react';
+
+class Input extends Component {
+  state = { valor: '' }
+
+  handleChange = (value) => {
+    this.setState({ valor: value });
+  }
+  render() {
+    return(
+      <input
+        value={this.state.valor}
+        onChange={(e) => this.handleChange(e.target.value)}
+      />
+    )
+  }
+}
+
+class App extends Component {
+  render() {
+    return(
+      <p>
+        Nombre completo:
+        <Input/>
+        <Input/>
+      </p>
+    )
+  }
+}
+
+export default App;
+```
+
+En este caso, estamos usando el componente `Input` dos veces en componente `App`, pero tenemos un problema, ¿cómo podemos mostrar los valores que tienen esos campos en un componente de más arriba?, lo que tendría que hacer es ingresar de alguna manera a los componentes `Input` y sacar el valor desde el componente `App`.
+
+Este es un problema muy común, el no dejar que un componente padre sea quien controle el estado.
+
+Muchas veces cuando estamos manejando data de la aplicación, vamos a querer controla el estado de esta idealmente en el componente de más arriba, para que este estado pueda ser compartido entre distintos componentes.
+
+### Levantar el estado de un componente
+
+Para esto debemos tomar el estado que se encuentra solamente localizado en el componente `Input` y lo vamos a subir, es decir, lo vamos a pasar de un componente hijo a un componente padre.
+
+```js
+import { Component } from 'react';
+
+class Input extends Component {
+  render() {
+    return(
+      <input
+        value={this.props.value}
+        onChange={this.props.onChange}
+      />
+    )
+  }
+}
+
+class App extends Component {
+  state = {
+    nombre: '',
+    apellido: ''
+  }
+
+  updateValues = (prop, value) => {
+    this.setState({ [prop]: value });
+  }
+
+  render() {
+    return(
+      <p>
+        Nombre completo: {`${this.state.nombre} ${this.state.apellido}`}
+        <Input
+          value={this.state.nombre}
+          onChange={e => this.updateValues('nombre', e.target.value)}
+        />
+        <Input
+          value={this.state.apellido}
+          onChange={e => this.updateValues('apellido', e.target.value)}
+        />
+      </p>
+    )
+  }
+}
+
+export default App;
+```
+
+De esta manera estamos cada vez que escribamos dentro de nuestro componente `Input` vamos a actualizar el estado de nuestro componente `App` y de esta manera poder acceder a los valores de los componentes `Input` desde el componente `App`.
