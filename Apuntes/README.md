@@ -564,3 +564,15 @@ componentDidUpdate(prevProps, prevState) {
 ```
 
 Este método no se ejecuta cuando se crea el componente, solamente se ejecuta cuando nosotros lo actualizamos. Para actualizar el componente podemos hacer que el componente se renderice de nuevo cambiando el estado o haciendo que se renderice el componente padre.
+
+### Desmontando componentes
+
+`componentWillUnmount()` es el método que se ejecuta cuando nuestro componente va a ser desmontado.
+
+```js
+componentWillUnmount() {
+  console.log('componentWillUnmount');
+}
+```
+
+Para desmontar un componente podemos hacer uso del renderizado condicional.
