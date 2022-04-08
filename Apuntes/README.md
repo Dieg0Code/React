@@ -552,3 +552,15 @@ constructor(props) {
 El método de `componentDidMount()` no recibe ningún argumento y por lo general se usa cuando debemos llamar a `setState()` para poder actualizar el estado de nuestro componente. Se ejecuta al final, después del constructor y después de renderizar el componente.
 
 Este método lo tenemos que utilizar si es que queremos evaluar algo del DOM, para ver si queremos mostrar un modal o algo así. También lo podemos utilizar cuando queremos iniciar llamados AJAX para poder traer datos de una API.
+
+### Actualizando componentes
+
+El método `componenDidUpdate()` recibe dos argumentos, las propiedades anteriores `prevProps` y el estado anterior `prevState`.
+
+```js
+componentDidUpdate(prevProps, prevState) {
+  console.log('componentDidUpdate', prevProps, prevState);
+}
+```
+
+Este método no se ejecuta cuando se crea el componente, solamente se ejecuta cuando nosotros lo actualizamos. Para actualizar el componente podemos hacer que el componente se renderice de nuevo cambiando el estado o haciendo que se renderice el componente padre.
