@@ -2213,3 +2213,521 @@ export default App;
 ```
 
 Podemos consumir múltiples contextos en un componente usando el Hook `useContext` y pasándole el contexto que queremos consumir. En este caso, creamos dos contextos, `Context1` y `Context2`, y los consumimos en el componente `Component`. De esta forma, podemos consumir múltiples contextos en un componente.
+
+## React router
+
+React router es una librería que nos permite manejar las rutas de una aplicación de React, con React router podemos crear rutas, navegar entre rutas, pasar parámetros a las rutas, proteger rutas, etc.
+
+### Primeros pasos
+
+Para usar React router, primero debemos instalarlo.
+
+```bash
+npm install react-router-dom
+```
+
+Luego, debemos importar en el archivo index.js de la aplicación.
+
+```js
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { BrowserRouter } from 'react-router-dom'
+import App from './App';
+import reportWebVitals from './reportWebVitals';
+
+ReactDOM.render(
+  <React.StrictMode>
+    <BrowserRouter> {/* este componente almacena el estado de la navegación */}
+      <App />
+    </BrowserRouter>
+  </React.StrictMode>,
+  document.getElementById('root')
+);
+reportWebVitals();
+```
+
+Debemos envolver el componente principal con `<BrowserRouter>` ya que este componente es el que almacena y maneja el estado de la navegación de React router en aplicaciones web.
+
+### Crear rutas
+
+```js
+import { Route, Switch } from 'react-router-dom';
+
+const App = () => {
+  return (
+    <Switch>
+      <Route path="/inicio">
+        <Inicio />
+      </Route>
+      <Route path="/acerca">
+        <Acerca />
+      </Route>
+      <Route path="/contacto">
+        <Contacto />
+      </Route>
+    </Switch>
+  );
+}
+
+export default App;
+```
+
+Para crear rutas en React router, debemos usar el componente `<Route>` y pasarle un prop `path` con la ruta de la página y un prop `children` con el componente que queremos mostrar en la página. Luego, debemos envolver los componentes de las rutas con el componente `<Switch>`, que renderiza el primer componente que coincide con la ruta.
+
+También tenemos el componente `<Link>` que nos permite navegar entre rutas.
+
+```js
+import { Link } from 'react-router-dom';
+
+const Menu = () => {
+  return (
+    <nav>
+      <ul>
+        <li><Link to="/inicio">Inicio</Link></li>
+        <li><Link to="/acerca">Acerca</Link></li>
+        <li><Link to="/contacto">Contacto</Link></li>
+      </ul>
+    </nav>
+  );
+}
+
+export default Menu;
+```
+
+### Rutas anidadas
+
+```js
+import { Switch, Route, Link, useRouteMatch, useParams } from 'react-router-dom'
+
+const Proyecto = () => {
+  const params = useParams()
+  const match = useRouteMatch() // no devuelve la ruta del proyecto, devuelve la ruta del componente!!
+
+  console.log({ params, match })
+  return (
+    <p>
+      proyecto...
+    </p>
+  )
+}
+
+const Portafolio = () => {
+  const match = useRouteMatch()
+  const params = useParams() // mostrar que no se obtienen los parametros de la ruta, si no que del componente siempre que este acepte con el componente de Route
+  console.log({ match, params }, 'lala')
+
+  return (
+    <div>
+      <h1>Portafolio</h1>
+      <ul>
+        <li>
+          <Link to={`${match.url}/proyecto-1`}>Proyecto 1</Link>
+        </li>
+        <li>
+          <Link to={`${match.url}/proyecto-2`}>Proyecto 2</Link>
+        </li>
+        <li>
+          <Link to={`${match.url}/proyecto-3`}>Proyecto 3</Link>
+        </li>
+      </ul>
+      <div>
+        <Switch>
+          {/* primero con proyecto-1 y proyecto-2, luego con :id */}
+          <Route path={`${match.path}/:id`}>
+            <Proyecto />
+          </Route>
+        </Switch>
+      </div>
+    </div>
+  )
+}
+function App() {
+  return (
+    <div>
+      <nav>
+        <ul>
+          <li>
+            <Link to="/">Inicio</Link>
+          </li>
+          <li>
+            <Link to="/portafolio">Portafolio</Link>
+          </li>
+          <li>
+            <Link to="/perfil">Perfil</Link>
+          </li>
+        </ul>
+      </nav>
+      <section>
+        <Switch>
+          <Route path="/portafolio">
+            <Portafolio />
+          </Route>
+          <Route path="/perfil">
+            <h1>Perfil</h1>
+          </Route>
+          <Route path="/">
+            <h1>Inicio</h1>
+          </Route>
+        </Switch>
+      </section>
+    </div>
+  );
+}
+
+export default App;
+```
+
+Las rutas anidadas son rutas que están dentro de otras rutas, en este caso, creamos una ruta `/portafolio` que tiene tres rutas anidadas `/proyecto-1`, `/proyecto-2` y `/proyecto-3`. Para crear rutas anidadas, debemos usar el componente `<Switch>` y el componente `<Route>` dentro de la ruta padre. Luego, debemos usar el Hook `useRouteMatch` para obtener la ruta de la página y el Hook `useParams` para obtener los parámetros de la ruta.
+
+### Rutas variables
+
+```js
+import { Switch, Route, Link, useRouteMatch, useParams } from 'react-router-dom'
+
+const Proyecto = () => {
+  const params = useParams()
+  return (
+    <p>
+      proyecto {params.id}
+    </p>
+  )
+}
+
+const Portafolio = () => {
+  const match = useRouteMatch()
+
+  return (
+    <div>
+      <h1>Portafolio</h1>
+      <ul>
+        <li>
+          <Link to={`${match.url}/proyecto-1`}>Proyecto 1</Link>
+        </li>
+        <li>
+          <Link to={`${match.url}/proyecto-2`}>Proyecto 2</Link>
+        </li>
+        <li>
+          <Link to={`${match.url}/proyecto-3`}>Proyecto 3</Link>
+        </li>
+      </ul>
+      <div>
+        <Switch>
+          <Route path={`${match.path}/:id`}>
+            <Proyecto />
+          </Route>
+        </Switch>
+      </div>
+    </div>
+  )
+}
+
+function App() {
+  return (
+    <div>
+      <nav>
+        <ul>
+          <li>
+            <Link to="/">Inicio</Link>
+          </li>
+          <li>
+            <Link to="/portafolio">Portafolio</Link>
+          </li>
+          <li>
+            <Link to="/perfil">Perfil</Link>
+          </li>
+        </ul>
+      </nav>
+      <section>
+        <Switch>
+          <Route path="/portafolio">
+            <Portafolio />
+          </Route>
+          <Route path="/perfil">
+            <h1>Perfil</h1>
+          </Route>
+          <Route path="/">
+            <h1>Inicio</h1>
+          </Route>
+        </Switch>
+      </section>
+    </div>
+  );
+}
+
+export default App;
+```
+
+Las rutas variables son rutas que tienen un parámetro que puede cambiar, en este caso, creamos una ruta `/portafolio/:id` que tiene tres rutas variables `/proyecto-1`, `/proyecto-2` y `/proyecto-3`. Para crear rutas variables, debemos usar el componente `<Switch>` y el componente `<Route>` dentro de la ruta padre. Luego, debemos usar el Hook `useParams` para obtener los parámetros de la ruta.
+
+### El componente NavLink
+
+El componente `<NavLink>` es similar al componente `<Link>`, pero nos permite agregar estilos a los enlaces activos, es decir, a los enlaces que están en la ruta actual.
+
+```js
+import { NavLink } from 'react-router-dom';
+
+const Menu = () => {
+  return (
+    <nav>
+      <ul>
+        <li>
+          <NavLink to="/inicio" activeClassName="active">Inicio</NavLink>
+        </li>
+        <li>
+          <NavLink to="/acerca" activeClassName="active">Acerca</NavLink>
+        </li>
+        <li>
+          <NavLink to="/contacto" activeClassName="active">Contacto</NavLink>
+        </li>
+      </ul>
+    </nav>
+  );
+}
+
+export default Menu;
+```
+
+Para usar el componente `<NavLink>`, debemos importarlo de `react-router-dom` y pasarle un prop `to` con la ruta de la página y un prop `activeClassName` con la clase que queremos agregar a los enlaces activos. De esta forma, podemos agregar estilos a los enlaces activos. También tenemos las propiedades `activeStyle` y `isActive` para personalizar los estilos de los enlaces activos.
+
+```js
+import { NavLink } from 'react-router-dom';
+
+const Menu = () => {
+  return (
+    <nav>
+      <ul>
+        <li>
+          <NavLink to="/inicio" activeStyle={{ color: 'red' }}>Inicio</NavLink>
+        </li>
+        <li>
+          <NavLink to="/acerca" activeStyle={{ color: 'red' }}>Acerca</NavLink>
+        </li>
+        <li>
+          <NavLink to="/contacto" activeStyle={{ color: 'red' }}>Contacto</NavLink>
+        </li>
+      </ul>
+    </nav>
+  );
+}
+
+export default Menu;
+```
+
+```js
+import { NavLink } from 'react-router-dom';
+
+const Menu = () => {
+  return (
+    <nav>
+      <ul>
+        <li>
+          <NavLink to="/inicio" isActive={(match, location) => location.pathname === '/inicio'}>Inicio</NavLink>
+        </li>
+        <li>
+          <NavLink to="/acerca" isActive={(match, location) => location.pathname === '/acerca'}>Acerca</NavLink>
+        </li>
+        <li>
+          <NavLink to="/contacto" isActive={(match, location) => location.pathname === '/contacto'}>Contacto</NavLink>
+        </li>
+      </ul>
+    </nav>
+  );
+}
+
+export default Menu;
+```
+
+`isActive` recibe una función que recibe dos argumentos, `match` y `location`, `match` es un objeto que contiene información sobre la coincidencia de la ruta y `location` es un objeto que contiene información sobre la ubicación actual de la aplicación, en este caso, comparamos la ruta actual con la ruta del enlace para determinar si el enlace está activo.
+
+### Componente Redirect
+
+El componente `<Redirect>` nos permite redirigir a los usuarios a una ruta diferente, esto se suele usar cuando queremos redirigir a los usuarios a una página de inicio de sesión, a una página de error, etc.
+
+```js
+import { Redirect } from 'react-router-dom';
+
+const App = () => {
+  const autenticado = false;
+  return (
+    <div>
+      {autenticado ? <Redirect to="/inicio" /> : <h1>Debes iniciar sesión</h1>}
+    </div>
+  );
+}
+
+export default App;
+```
+
+Para usar el componente `<Redirect>`, debemos importarlo de `react-router-dom` y pasarle un prop `to` con la ruta a la que queremos redirigir a los usuarios. Si el prop `autenticado` es `true`, redirigimos a los usuarios a la ruta `/inicio`, si el prop `autenticado` es `false`, mostramos un mensaje que dice "Debes iniciar sesión".
+
+### Error 404
+
+El componente `<Route>` con la prop `path="*"` nos permite crear una ruta que se muestra cuando no se encuentra la ruta actual, es decir, cuando se ingresa una ruta que no existe en la aplicación.
+
+```js
+import { Route, Switch } from 'react-router-dom';
+
+const App = () => {
+  return (
+    <Switch>
+      <Route path="/inicio">
+        <Inicio />
+      </Route>
+      <Route path="/acerca">
+        <Acerca />
+      </Route>
+      <Route path="/contacto">
+        <Contacto />
+      </Route>
+      <Route path="*">
+        <Error404 />
+      </Route>
+    </Switch>
+  );
+}
+
+export default App;
+```
+
+Para crear una página de error 404, debemos usar el componente `<Route>` con la prop `path="*"`, que se muestra cuando no se encuentra la ruta actual.
+
+### Objeto History
+
+Pude ser que en algún momento queramos navegar a una ruta diferente desde un componente que no está directamente relacionado con las rutas, para hacer esto, podemos usar el objeto `history` que nos proporciona React router.
+
+```js
+import { Switch, Route, Link, useHistory } from 'react-router-dom'
+
+function App() {
+  const history = useHistory()
+  console.log({ history })
+  const forward = () => {
+    history.goForward()
+  }
+  
+  const back = () => {
+    history.goBack()
+  }
+  return (
+    <div>
+      <nav>
+        <ul>
+          <li>
+            <Link to="/">Inicio</Link>
+          </li>
+          <li>
+            <Link to="/portafolio">Portafolio</Link>
+          </li>
+          <li>
+            <Link to="/perfil">Perfil</Link>
+          </li>
+        </ul>
+      </nav>
+      <section>
+        <button onClick={back}>Atras</button>
+        <button onClick={forward}>Adelante</button>
+        <Switch>
+          <Route path="/portafolio">
+            <h1>Portafolio</h1>
+          </Route>
+          <Route path="/perfil">
+            <h1>Perfil</h1>
+          </Route>
+          <Route path="/">
+            <h1>Inicio</h1>
+          </Route>
+          <Route path="*">
+            404: ruta no encontrada
+          </Route>
+        </Switch>
+      </section>
+    </div>
+  );
+}
+
+export default App;
+```
+
+El objeto `history` nos proporciona métodos para navegar hacia adelante y hacia atrás en la historia de la aplicación, para hacer esto, debemos usar los métodos `goForward` y `goBack` del objeto `history`.
+
+### Objeto Location
+
+El objeto `location` nos proporciona información sobre la ubicación actual de la aplicación, como la ruta actual, el estado de la aplicación, etc.
+
+```js
+import { Switch, Route, Link, useLocation } from 'react-router-dom'
+
+function App() {
+  const location = useLocation()
+  console.log({ location })
+  return (
+    <div>
+      <nav>
+        <ul>
+          <li>
+            <Link to="/">Inicio</Link>
+          </li>
+          <li>
+            <Link to="/portafolio">Portafolio</Link>
+          </li>
+          <li>
+            <Link to="/perfil">Perfil</Link>
+          </li>
+        </ul>
+      </nav>
+      <section>
+        <Switch>
+          <Route path="/portafolio">
+            <h1>Portafolio</h1>
+          </Route>
+          <Route path="/perfil">
+            <h1>Perfil</h1>
+          </Route>
+          <Route path="/">
+            <h1>Inicio</h1>
+          </Route>
+          <Route path="*">
+            404: ruta no encontrada
+          </Route>
+        </Switch>
+      </section>
+    </div>
+  );
+}
+
+export default App;
+```
+
+Este objeto es útil para obtener información sobre la ubicación actual de la aplicación, como la ruta actual, el estado de la aplicación, etc.
+
+### Proteger rutas
+
+Puede ser que queramos proteger rutas de nuestra aplicación, es decir, que solo los usuarios autenticados puedan acceder a ciertas rutas, para hacer esto, podemos usar el componente `<Route>` y el componente `<Redirect>`.
+
+```js
+import { Route, Redirect } from 'react-router-dom';
+
+const App = () => {
+  const autenticado = false;
+  return (
+    <Switch>
+      <Route path="/inicio">
+        {autenticado ? <Inicio /> : <Redirect to="/login" />}
+      </Route>
+      <Route path="/acerca">
+        {autenticado ? <Acerca /> : <Redirect to="/login" />}
+      </Route>
+      <Route path="/contacto">
+        {autenticado ? <Contacto /> : <Redirect to="/login" />}
+      </Route>
+      <Route path="/login">
+        <Login />
+      </Route>
+    </Switch>
+  );
+}
+
+export default App;
+```
+
+Para proteger rutas de nuestra aplicación, debemos usar el componente `<Route>` y el componente `<Redirect>`, si el prop `autenticado` es `true`, mostramos el componente de la ruta, si el prop `autenticado` es `false`, redirigimos a los usuarios a la ruta `/login`.
