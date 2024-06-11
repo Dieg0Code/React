@@ -2731,3 +2731,1441 @@ export default App;
 ```
 
 Para proteger rutas de nuestra aplicación, debemos usar el componente `<Route>` y el componente `<Redirect>`, si el prop `autenticado` es `true`, mostramos el componente de la ruta, si el prop `autenticado` es `false`, redirigimos a los usuarios a la ruta `/login`.
+
+## Redux
+
+React a grandes rasgos es un árbol de componentes en donde cada componente es un nodo que a la vez tiene nodos hijos y estos también y así. Por lo general cada uno de estos nodos tiene un estado el cual nosotros podemos manejar con `useState` en donde este Hook nos ayuda a guardar y manipular la información actual que se está manejando en el componente, trabajar en aplicaciones pequeñas de esta manera no suele ser un problema, pero a medida que la aplicación empieza a crecer suele aumentar la complejidad del manejo de estado de la aplicación, sobre todo si está más de un dev trabajando en la aplicación.
+
+Redux nos permite sacar todos los estados de cada uno de los componentes y guardarlos todos de manera centralizada en Redux.
+
+### Cómo funciona Redux
+
+La UI de la aplicación es la que se comunica directamente con el usuario y es la principal fuente de cambio del estado de la aplicación. Cada vez que queramos guardar algún dato generado en la app, ya sea información ingresada por el usuario o información traída desde alguna fuente externa, vamos a usar los `Dispatcher`. Los `Dispatcher` son funciones que envían acciones al `Store` de Redux.
+
+El flujo de trabajo de Redux se puede descomponer en varios pasos clave:
+
+1. **Acciones (Actions)**: Son objetos JavaScript que envían datos desde tu aplicación a la `Store` de Redux. Cada acción debe tener una propiedad `type` que indica el tipo de acción a realizar, y puede tener una carga útil (`payload`) con información adicional.
+
+    ```javascript
+    const addAction = {
+        type: 'ADD_ITEM',
+        payload: { item: 'Nuevo ítem' }
+    };
+    ```
+
+2. **Despachadores (Dispatchers)**: Son métodos disponibles en la `Store` de Redux para enviar acciones. Al despachar una acción, se envía al `Store` para que sea procesada por los `Reducers`.
+
+    ```javascript
+    store.dispatch(addAction);
+    ```
+
+3. **Reducers**: Son funciones puras que toman el estado actual y una acción como argumentos, y retornan un nuevo estado. Los `Reducers` especifican cómo las acciones transforman el estado de la aplicación.
+
+    ```javascript
+    const initialState = { items: [] };
+
+    function itemsReducer(state = initialState, action) {
+        switch (action.type) {
+            case 'ADD_ITEM':
+                return {
+                    ...state,
+                    items: [...state.items, action.payload.item]
+                };
+            default:
+                return state;
+        }
+    }
+    ```
+
+4. **Store**: Es el objeto que reúne el estado de la aplicación. El `Store` permite el acceso al estado vía `getState()`, el despacho de acciones mediante `dispatch(action)` y la suscripción a cambios del estado con `subscribe(listener)`.
+
+    ```javascript
+    import { createStore } from 'redux';
+
+    const store = createStore(itemsReducer);
+    ```
+
+5. **Suscripciones (Subscriptions)**: Permiten que la UI se actualice en respuesta a cambios en el estado del `Store`. Al suscribirse a la `Store`, la aplicación puede responder a cualquier cambio de estado.
+
+    ```javascript
+    store.subscribe(() => {
+        console.log('El estado ha cambiado:', store.getState());
+    });
+    ```
+
+### Beneficios de usar Redux
+
+1. **Centralización del Estado**: Todo el estado de la aplicación se encuentra en un solo lugar, lo que facilita el seguimiento y la gestión del mismo.
+2. **Previsibilidad del Estado**: Los `Reducers` son funciones puras, lo que significa que el mismo input siempre produce el mismo output, haciendo el estado predecible.
+3. **Depuración y Testing**: Con Redux, es más fácil depurar y realizar tests en la aplicación, gracias a que el flujo de datos es claro y está bien definido.
+4. **Desarrollo Escalable**: Redux facilita el trabajo en equipo y el desarrollo de aplicaciones grandes, ya que permite manejar el estado de forma consistente y mantenible.
+
+### Instalación de Redux
+
+Para instalar Redux en tu aplicación, puedes usar el siguiente comando:
+
+```bash
+npm install redux
+npm install react-redux
+```
+
+
+Para comenzar a trabajar con Redux, necesitarás importar la función `createStore` de Redux en tu aplicación:
+
+```javascript
+import { createStore } from 'redux';
+```
+
+Este método crea un `Store` de Redux que contendrá el estado de tu aplicación, recibe como argumento una función `reducer` que especifica cómo los cambios de estado son realizados en respuesta a las acciones.
+
+### Creación de un Store
+
+Para crear un `Store` de Redux, necesitas definir un `Reducer` que especifica cómo el estado de la aplicación cambia en respuesta a las acciones enviadas al `Store`. Un `Reducer` es una función pura que toma el estado actual y una acción, y devuelve un nuevo estado.
+
+```javascript
+const initialState = { count: 0 };
+
+function counterReducer(state = initialState, action) {
+    switch (action.type) {
+        case 'INCREMENT':
+            return { count: state.count + 1 };
+        case 'DECREMENT':
+            return { count: state.count - 1 };
+        default:
+            return state;
+    }
+}
+```
+
+Luego, puedes crear un `Store` de Redux utilizando el `Reducer` que has definido:
+
+```javascript
+const store = createStore(counterReducer);
+```
+
+### react-redux
+
+`react-redux` es una librería que proporciona una integración entre React y Redux, permitiendo que los componentes de React accedan al `Store` de Redux y se suscriban a los cambios de estado.
+
+Para utilizar `react-redux`, necesitas importar el componente `Provider` de `react-redux` y envolver tu aplicación con él. El componente `Provider` toma un prop `store` que especifica el `Store` de Redux que se utilizará en la aplicación.
+
+```javascript
+import { Provider } from 'react-redux';
+
+ReactDOM.render(
+    <Provider store={store}>
+        <App />
+    </Provider>,
+    document.getElementById('root')
+);
+```
+
+La propiedad `store` del componente `Provider` proporciona acceso al `Store` de Redux en todos los componentes de la aplicación.
+
+Un ejemplo de cómo se vería un componente que accede al estado del `Store` de Redux:
+
+```javascript
+import { useSelector } from 'react-redux';
+
+function Counter() {
+    const count = useSelector(state => state.count);
+
+    return (
+        <div>
+            <p>Count: {count}</p>
+        </div>
+    );
+}
+```
+
+El hook `useSelector` de `react-redux` permite acceder al estado del `Store` de Redux en un componente de React.
+
+Una mala practica es guardar estados de componentes como campos de texto, checkbox, radio buttons, etc. en el `Store` de Redux, ya que estos estados son locales y no necesitan ser compartidos con otros componentes, ademas que redux renderiza todos los componentes que estén suscritos al `Store` cada vez que se hace un cambio en el `Store`, por lo que si guardamos estados locales en el `Store`, estos componentes se van a renderizar innecesariamente.
+
+Para este tipo de datos locales, es mejor usar el `useState` de React.
+
+```javascript
+import { useState } from 'react';
+
+function Form() {
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
+    return (
+        <form>
+            <input type="text" value={name} onChange={e => setName(e.target.value)} />
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)} />
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)} />
+        </form>
+    );
+}
+```
+
+### useDispatch
+
+El hook `useDispatch` de `react-redux` permite despachar acciones al `Store` de Redux desde un componente de React.
+
+```javascript
+import { useDispatch } from 'react-redux';
+
+function Counter() {
+    const dispatch = useDispatch();
+
+    const increment = () => {
+        dispatch({ type: 'INCREMENT' });
+    };
+
+    const decrement = () => {
+        dispatch({ type: 'DECREMENT' });
+    };
+
+    return (
+        <div>
+            <button onClick={increment}>Increment</button>
+            <button onClick={decrement}>Decrement</button>
+        </div>
+    );
+}
+```
+
+El hook `useDispatch` devuelve una función que permite despachar acciones al `Store` de Redux.
+
+### useSelector
+
+El hook `useSelector` de `react-redux` permite acceder al estado del `Store` de Redux en un componente de React.
+
+```javascript
+import { useSelector } from 'react-redux';
+
+function Counter() {
+    const count = useSelector(state => state.count);
+
+    return (
+        <div>
+            <p>Count: {count}</p>
+        </div>
+    );
+}
+```
+
+El hook `useSelector` recibe una función que toma el estado del `Store` como argumento y devuelve el valor del estado que deseas acceder.
+
+Podemos combinar el Hook `useState` con los hooks de redux para guardar un estado local de un componente en el `Store` de Redux.
+
+```javascript
+import { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+
+export const reducer = (state = 0, action) => {
+  console.log(action)
+  switch(action.type) {
+    case 'incrementar':
+      return state + 1
+    case 'decrementar':
+      return state - 1
+    case 'set':
+      return action.payload
+    default:
+      return state
+  }
+}
+
+function App() {
+  const [valor, setValor] = useState('')
+  const dispatch = useDispatch()
+  const state = useSelector(state => state)
+
+  return (
+    <div>
+      <p>{state}</p>
+      <button onClick={() => dispatch({ type: 'incrementar' })}>Incrementar</button>
+      <button onClick={() => dispatch({ type: 'decrementar' })}>Decrementar</button>
+      <button onClick={() => dispatch({ type: 'set', payload: valor })}>Set</button>
+      <input value={valor} onChange={e => setValor(Number(e.target.value))} />
+    </div>
+  );
+}
+
+export default App;
+```
+
+### Ejemplo de una aplicación con Redux
+
+```javascript
+import { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+
+const initialState = {
+  todos: [],
+  filter: 'all',
+}
+
+export const reducer = (state = initialState, action) => {
+  switch(action.type) {
+    case 'todo/add':
+      const id = Math.random().toString(36)
+      return {
+        ...state,
+        todos: state.todos.concat({ id, ...action.payload })
+      }
+    case 'todo/complete':
+      const newTodos = state.todos.map(todo => {
+        if (todo.id === action.payload.id) {
+          return { ...todo, completed: !todo.completed }
+        }
+
+        return todo
+      })
+
+      return {
+        ...state,
+        todos: newTodos,
+      }
+    case 'filter/set':
+      return {
+        ...state,
+        filter: action.payload,
+      }
+    default:
+      return state
+  }
+}
+const selectTodos = state => {
+  const { todos, filter } = state
+
+  if (filter === 'complete') {
+    return todos.filter(todo => todo.completed)
+  }
+
+  if (filter === 'incomplete') {
+    return todos.filter(todo => !todo.completed)
+  }
+
+  return todos
+}
+
+const TodoItem = ({ todo }) => {
+  const dispatch = useDispatch()
+  return (
+    <li
+      style={{ textDecoration: todo.completed ? 'line-through' : 'none' }}
+      key={todo.id}
+      onClick={() => dispatch({ type: 'todo/complete', payload: todo })}
+    >
+      {todo.title}
+    </li>
+  )
+}
+function App() {
+  const [value, setValue] = useState('')
+  const dispatch = useDispatch()
+  const todos = useSelector(selectTodos)
+  const submit = e => {
+    e.preventDefault()
+    if (!value.trim()) {
+      return
+    }
+    const todo = { title: value, completed: false }
+    dispatch({ type: 'todo/add', payload: todo })
+    setValue('')
+  }
+
+  return (
+    <div>
+      <form onSubmit={submit}>
+        <input value={value} onChange={e => setValue(e.target.value)} />
+      </form>
+      <button onClick={() => dispatch({ type: 'filter/set', payload: 'all' })}>Todos</button>
+      <button onClick={() => dispatch({ type: 'filter/set', payload: 'complete' })}>Completados</button>
+      <button onClick={() => dispatch({ type: 'filter/set', payload: 'incomplete' })}>Incompletos</button>
+      <ul>
+        {todos.map(todo => <TodoItem key={todo.id} todo={todo} />)}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
+```
+
+### Estado Inicial y Reducer
+
+```javascript
+const initialState = {
+  todos: [],
+  filter: 'all',
+}
+```
+
+1. **Estado Inicial (`initialState`)**: Define el estado inicial de la aplicación. En este caso, tenemos una lista de `todos` (tareas) vacía y un filtro establecido en `'all'` (todas las tareas).
+
+```javascript
+export const reducer = (state = initialState, action) => {
+  switch(action.type) {
+    case 'todo/add':
+      const id = Math.random().toString(36)
+      return {
+        ...state,
+        todos: state.todos.concat({ id, ...action.payload })
+      }
+    case 'todo/complete':
+      const newTodos = state.todos.map(todo => {
+        if (todo.id === action.payload.id) {
+          return { ...todo, completed: !todo.completed }
+        }
+
+        return todo
+      })
+
+      return {
+        ...state,
+        todos: newTodos,
+      }
+    case 'filter/set':
+      return {
+        ...state,
+        filter: action.payload,
+      }
+    default:
+      return state
+  }
+}
+```
+
+2. **Reducer (`reducer`)**: El reducer es una función que toma el estado actual y una acción, y retorna un nuevo estado basado en el tipo de acción. Aquí, manejamos tres tipos de acciones:
+    - `'todo/add'`: Agrega una nueva tarea. Genera un `id` único para la tarea y la añade a la lista de `todos`.
+    - `'todo/complete'`: Marca una tarea como completada o incompleta. Busca la tarea por `id` y alterna su estado `completed`.
+    - `'filter/set'`: Establece el filtro para mostrar todas las tareas, solo las completadas, o solo las incompletas.
+
+### Selectores
+
+```javascript
+const selectTodos = state => {
+  const { todos, filter } = state
+
+  if (filter === 'complete') {
+    return todos.filter(todo => todo.completed)
+  }
+
+  if (filter === 'incomplete') {
+    return todos.filter(todo => !todo.completed)
+  }
+
+  return todos
+}
+```
+
+3. **Selector (`selectTodos`)**: Una función que selecciona parte del estado de la aplicación. Aquí, selecciona las tareas (`todos`) basadas en el filtro (`filter`). Retorna todas las tareas, solo las completadas, o solo las incompletas, según el filtro.
+
+### Componente TodoItem
+
+```javascript
+const TodoItem = ({ todo }) => {
+  const dispatch = useDispatch()
+  return (
+    <li
+      style={{ textDecoration: todo.completed ? 'line-through' : 'none' }}
+      key={todo.id}
+      onClick={() => dispatch({ type: 'todo/complete', payload: todo })}
+    >
+      {todo.title}
+    </li>
+  )
+}
+```
+
+4. **Componente TodoItem**: Este componente representa una tarea individual (`todo`). Usa `useDispatch` para obtener la función `dispatch`, que se usa para enviar acciones. Cuando se hace clic en una tarea, envía una acción para alternar su estado de completado (`'todo/complete'`).
+
+### Componente Principal App
+
+```javascript
+function App() {
+  const [value, setValue] = useState('')
+  const dispatch = useDispatch()
+  const todos = useSelector(selectTodos)
+  const submit = e => {
+    e.preventDefault()
+    if (!value.trim()) {
+      return
+    }
+    const todo = { title: value, completed: false }
+    dispatch({ type: 'todo/add', payload: todo })
+    setValue('')
+  }
+
+  return (
+    <div>
+      <form onSubmit={submit}>
+        <input value={value} onChange={e => setValue(e.target.value)} />
+      </form>
+      <button onClick={() => dispatch({ type: 'filter/set', payload: 'all' })}>Todos</button>
+      <button onClick={() => dispatch({ type: 'filter/set', payload: 'complete' })}>Completados</button>
+      <button onClick={() => dispatch({ type: 'filter/set', payload: 'incomplete' })}>Incompletos</button>
+      <ul>
+        {todos.map(todo => <TodoItem key={todo.id} todo={todo} />)}
+      </ul>
+    </div>
+  );
+}
+```
+
+5. **Componente Principal (`App`)**:
+    - **Estado Local (`value`)**: Usa `useState` para manejar el valor del input.
+    - **`useDispatch`**: Obtiene la función `dispatch` para enviar acciones.
+    - **`useSelector`**: Usa `selectTodos` para obtener las tareas filtradas del estado global.
+    - **Manejador de Envío (`submit`)**: Maneja el envío del formulario para agregar una nueva tarea. Si el valor del input no está vacío, crea un nuevo objeto `todo` y envía una acción `'todo/add'`.
+    - **Botones de Filtro**: Tres botones que envían acciones para cambiar el filtro (`'filter/set'`).
+    - **Lista de Tareas**: Renderiza la lista de tareas usando `todos` y el componente `TodoItem`.
+
+### Resumen del Flujo de Datos
+
+1. **Agregar Tareas**: El usuario escribe en el input y envía el formulario. Esto despacha una acción `'todo/add'`, que el reducer procesa para agregar la nueva tarea al estado.
+2. **Completar Tareas**: El usuario hace clic en una tarea, despachando una acción `'todo/complete'`, que el reducer procesa para alternar el estado `completed` de la tarea.
+3. **Filtrar Tareas**: El usuario hace clic en uno de los botones de filtro, despachando una acción `'filter/set'`, que el reducer procesa para cambiar el filtro en el estado.
+4. **Renderizar Tareas**: El componente `App` usa `useSelector` para obtener las tareas filtradas y las renderiza usando el componente `TodoItem`.
+
+
+### CombineReducers
+
+`combineReducers` es una función de Redux que se usa para combinar múltiples reducers en un único reducer principal. Esto permite dividir la lógica de manejo del estado en funciones más pequeñas y específicas, facilitando el mantenimiento y la organización del código.
+
+En Redux, el estado de la aplicación se maneja mediante una única "fuente de verdad" (un objeto de estado central). A medida que la aplicación crece, este objeto de estado puede volverse muy grande y complejo, y manejar todas las actualizaciones de estado en un solo reducer puede ser difícil. Aquí es donde `combineReducers` resulta útil.
+
+Primero, veamos los reducers individuales para `todos` y `filter`:
+
+```javascript
+const todosReducer = (state = [], action) => {
+  switch(action.type) {
+    case 'todo/add':
+      const id = Math.random().toString(36)
+      return state.concat({ id, ...action.payload })
+
+    case 'todo/complete':
+      return state.map(todo => {
+        if (todo.id === action.payload.id) {
+          return { ...todo, completed: !todo.completed }
+        }
+        return todo
+      })
+    default:
+      return state
+  }
+}
+
+export const filterReducer = (state = 'all', action) => {
+  switch(action.type) {
+    case 'filter/set':
+      return action.payload
+    default:
+      return state
+  }
+}
+```
+
+Estos dos reducers son responsables de manejar diferentes partes del estado:
+- **`todosReducer`**: Maneja la lista de tareas (`todos`).
+- **`filterReducer`**: Maneja el filtro actual (`filter`).
+
+Luego, usamos `combineReducers` para combinarlos:
+
+```javascript
+export const reducer = combineReducers({
+  todos: todosReducer,
+  filter: filterReducer,
+})
+```
+
+### ¿Cómo Funciona `combineReducers`?
+
+`combineReducers` toma un objeto cuyos valores son diferentes reducers, y retorna un nuevo reducer que combina sus resultados en un solo estado. Este nuevo reducer llamará a cada reducer individual con su parte correspondiente del estado y la acción despachada.
+
+Por ejemplo, el estado combinado para este caso podría ser algo como esto:
+
+```javascript
+{
+  todos: [],
+  filter: 'all'
+}
+```
+
+Cuando una acción se despacha, `combineReducers` se encarga de dividir la acción y el estado para que cada reducer individual reciba solo la parte del estado que le corresponde:
+
+1. **`todosReducer`** recibirá la lista de tareas (`state.todos`) y la acción.
+2. **`filterReducer`** recibirá el filtro actual (`state.filter`) y la acción.
+
+Esto permite que cada reducer maneje solo una parte del estado global, lo que hace que el código sea más modular y fácil de manejar.
+
+### Flujo de la Aplicación con `combineReducers`
+
+En el contexto de tu aplicación de Todo List, el flujo de trabajo es el siguiente:
+
+1. **Agregar una Tarea**:
+   - El usuario escribe en el input y envía el formulario.
+   - Se despacha una acción `'todo/add'` con el nuevo `todo` como `payload`.
+   - `combineReducers` envía esta acción a `todosReducer`, que añade la nueva tarea a la lista de `todos`.
+
+2. **Completar una Tarea**:
+   - El usuario hace clic en una tarea.
+   - Se despacha una acción `'todo/complete'` con la tarea como `payload`.
+   - `combineReducers` envía esta acción a `todosReducer`, que alterna el estado `completed` de la tarea.
+
+3. **Filtrar Tareas**:
+   - El usuario hace clic en uno de los botones de filtro.
+   - Se despacha una acción `'filter/set'` con el nuevo filtro como `payload`.
+   - `combineReducers` envía esta acción a `filterReducer`, que actualiza el estado `filter`.
+
+4. **Renderizar Tareas**:
+   - El componente `App` usa `useSelector` para obtener las tareas filtradas del estado global.
+   - Las tareas se renderizan en la UI usando el componente `TodoItem`.
+
+`combineReducers` facilita la organización y el mantenimiento del estado en aplicaciones Redux grandes al permitir dividir la lógica de los reducers en funciones más pequeñas y específicas. Cada reducer maneja una parte del estado, y `combineReducers` los combina en un solo reducer principal que se usa para crear la `store` de Redux. Esto hace que el manejo del estado sea más modular, limpio y fácil de entender.
+
+### Middleware
+
+En Redux, los **middlewares** son funciones que se ejecutan entre el momento en que una acción es despachada y el momento en que llega al reducer. Los middlewares permiten interceptar y manejar acciones, así como ejecutar tareas asincrónicas, loguear acciones, realizar verificaciones o modificaciones de datos, y más. Son una herramienta poderosa para extender la funcionalidad de Redux de una manera modular y reutilizable.
+
+### Ejemplo de Middleware Asincrónico
+
+```javascript
+export const asyncMiddleware = store => next => action => {
+  if (typeof action === 'function') {
+    return action(store.dispatch, store.getState)
+  }
+
+  return next(action)
+}
+```
+
+#### Descripción del Middleware
+
+1. **Verificación del Tipo de Acción**:
+   - Si la acción es una función (`typeof action === 'function'`), en lugar de pasarla al siguiente middleware o reducer, se ejecuta la función de la acción.
+   - La función de la acción recibe `store.dispatch` y `store.getState` como argumentos, permitiendo despachar otras acciones o acceder al estado actual de la tienda.
+
+2. **Paso al Siguiente Middleware o Reducer**:
+   - Si la acción no es una función, se pasa al siguiente middleware o directamente al reducer mediante `next(action)`.
+
+### Thunks: Acciones Asíncronas
+
+El middleware `asyncMiddleware` permite manejar **thunks**, que son funciones que despachan acciones de manera asincrónica. Un ejemplo de un thunk en tu código es `fetchThunk`:
+
+```javascript
+const fetchThunk = () => async (dispatch) => {
+  dispatch({ type: 'todos/pending' })
+  try {
+    const response = await fetch('https://jsonplaceholder.typicode.com/todos')
+    const data = await response.json()
+    const todos = data.slice(0, 10)
+    dispatch({ type: 'todos/fulfilled', payload: todos })
+  } catch(e) {
+    dispatch({ type: 'todos/error', error: e.message })
+  }
+}
+```
+
+#### Descripción del Thunk
+
+1. **Inicio de la Petición**:
+   - Se despacha una acción de tipo `'todos/pending'` para indicar que la petición ha comenzado.
+
+2. **Realización de la Petición Asincrónica**:
+   - Se realiza una petición `fetch` para obtener una lista de tareas.
+   - Se esperan los resultados de la petición con `await`.
+
+3. **Manejo del Resultado Exitoso**:
+   - Si la petición es exitosa, se despacha una acción de tipo `'todos/fulfilled'` con las tareas obtenidas como `payload`.
+
+4. **Manejo de Errores**:
+   - Si hay un error durante la petición, se despacha una acción de tipo `'todos/error'` con el mensaje de error.
+
+### Reducers Asociados
+
+Los reducers manejan las acciones despachadas por el thunk y actualizan el estado correspondiente.
+
+#### `todosReducer` y `fetchingReducer`
+
+```javascript
+const todosReducer = (state = [], action) => {
+  switch(action.type) {
+    case 'todos/fulfilled': {
+      return action.payload
+    }
+    case 'todo/add':
+      const id = Math.random().toString(36)
+      return state.concat({ id, ...action.payload })
+    case 'todo/complete':
+      return state.map(todo => {
+        if (todo.id === action.payload.id) {
+          return { ...todo, completed: !todo.completed }
+        }
+        return todo
+      })
+    default:
+      return state
+  }
+}
+
+const initialFetching = { loading: 'idle', error: null }
+
+const fetchingReducer = (state = initialFetching, action) => {
+  switch(action.type) {
+    case 'todos/pending':
+      return { ...state, loading: 'pending' }
+    case 'todos/fulfilled':
+      return { ...state, loading: 'succeeded' }
+    case 'todos/error':
+      return { error: action.error, loading: 'rejected' }
+    default:
+      return state
+  }
+}
+```
+
+#### Combinación de Reducers
+
+```javascript
+export const reducer = combineReducers({
+  todos: combineReducers({
+    entities: todosReducer,
+    status: fetchingReducer,
+  }),
+  filter: filterReducer,
+})
+```
+
+### Uso del Middleware y Thunks en el Componente
+
+El componente `App` despacha el thunk `fetchThunk` cuando se hace clic en el botón de "Fetch":
+
+```javascript
+function App() {
+  const [value, setValue] = useState('')
+  const dispatch = useDispatch()
+
+  const status = useSelector(selectStatus)
+  const todos = useSelector(selectTodos)
+
+  const submit = e => {
+    e.preventDefault()
+    if (!value.trim()) {
+      return
+    }
+    const todo = { title: value, completed: false }
+    dispatch({ type: 'todo/add', payload: todo })
+    setValue('')
+  }
+
+  if (status.loading == 'pending') {
+    return <p>cargando...</p>
+  }
+
+  return (
+    <div>
+      <form onSubmit={submit}>
+        <input value={value} onChange={e => setValue(e.target.value)} />
+      </form>
+      <button onClick={() => dispatch({ type: 'filter/set', payload: 'all' })}>Todos</button>
+      <button onClick={() => dispatch({ type: 'filter/set', payload: 'complete' })}>Completados</button>
+      <button onClick={() => dispatch({ type: 'filter/set', payload: 'incomplete' })}>Incompletos</button>
+      <button onClick={() => dispatch(fetchThunk())}>Fetch</button>
+      <ul>
+        {todos.map(todo => <TodoItem key={todo.id} todo={todo} />)}
+      </ul>
+    </div>
+  );
+}
+```
+
+1. **Despachar `fetchThunk`**: Cuando se hace clic en el botón "Fetch", se despacha `fetchThunk()`. Este thunk realiza una petición asincrónica y despacha varias acciones según el estado de la petición.
+
+2. **Mostrar Cargando**: Si el estado de la petición es `pending`, se muestra un mensaje de "cargando...".
+
+3. **Renderizado de Tareas**: Las tareas se renderizan utilizando el componente `TodoItem`.
+
+Los **middlewares** en Redux permiten interceptar acciones y añadir lógica adicional antes de que lleguen a los reducers. El middleware `asyncMiddleware` facilita la gestión de acciones asincrónicas (thunks), permitiendo realizar tareas como peticiones a una API y manejar su resultado de manera ordenada y predecible. Los reducers correspondientes manejan las acciones despachadas por estos thunks y actualizan el estado de la aplicación en consecuencia. Esto proporciona una forma modular y extensible de gestionar la lógica compleja y asincrónica en aplicaciones Redux.
+
+### Practicas comunes
+
+Al trabajar con Redux, existen varias prácticas comunes que facilitan el desarrollo y mantenimiento de la aplicación. Estas prácticas incluyen el uso de action creators, thunks, selectors, y middleware, entre otros. A continuación, se explica cómo se aplican estas prácticas en el código proporcionado.
+
+#### 1. Action Creators
+
+**Action Creators** son funciones que crean y retornan acciones. Usarlos ayuda a mantener el código organizado y consistente.
+
+```javascript
+// Ejemplo de un Action Creator
+const addTodo = (todo) => ({
+  type: 'todo/add',
+  payload: todo,
+});
+```
+
+En el código proporcionado, se puede ver que las acciones se están creando directamente dentro de los componentes. Sin embargo, para mejorar, podrías definir action creators para cada tipo de acción.
+
+#### 2. Thunks
+
+**Thunks** son una forma de manejar lógica asincrónica en Redux. Un thunk es una función que se despacha en lugar de una acción y puede realizar despachos adicionales y lógica asincrónica.
+
+En el código, `fetchThunk` es un ejemplo de thunk:
+
+```javascript
+const fetchThunk = () => async (dispatch) => {
+  dispatch({ type: 'todos/pending' })
+  try {
+    const response = await fetch('https://jsonplaceholder.typicode.com/todos')
+    const data = await response.json()
+    const todos = data.slice(0, 10)
+    dispatch({ type: 'todos/fulfilled', payload: todos })
+  } catch(e) {
+    dispatch({ type: 'todos/error', error: e.message })
+  }
+}
+```
+
+Este thunk realiza una solicitud a una API y maneja los estados de carga y error despachando acciones correspondientes.
+
+#### 3. Middleware
+
+**Middleware** en Redux son funciones que interceptan las acciones antes de que lleguen a los reducers. Se usan para manejar lógica compleja como operaciones asincrónicas, logging, y más.
+
+```javascript
+export const asyncMiddleware = store => next => action => {
+  if (typeof action === 'function') {
+    return action(store.dispatch, store.getState)
+  }
+  return next(action)
+}
+```
+
+El middleware `asyncMiddleware` permite manejar acciones que son funciones (thunks), ejecutándolas con `dispatch` y `getState`.
+
+#### 4. Selectors
+
+**Selectors** son funciones que extraen y transforman datos del estado de Redux. Usar selectors ayuda a mantener el código de los componentes limpio y enfocado solo en la presentación.
+
+En el código, `createSelector` de la biblioteca `reselect` se usa para crear un selector memoizado:
+
+```javascript
+const selectTodos = createSelector(
+  state => state.todos.entities,
+  state => state.todos.filter,
+  (todos, filter) => {
+    if (filter === 'complete') {
+      return todos.filter(todo => todo.completed)
+    }
+    if (filter === 'incomplete') {
+      return todos.filter(todo => !todo.completed)
+    }
+    return todos
+  }
+)
+```
+
+Este selector toma el estado de `todos` y `filter`, y devuelve una lista de todos filtrados según el valor del filtro.
+
+#### 5. Combine Reducers
+
+**Combine Reducers** permite dividir el estado en secciones manejadas por diferentes reducers y luego combinarlas en un solo reducer raíz. Esto mantiene el código modular y más fácil de mantener.
+
+```javascript
+export const reducer = combineReducers({
+  todos: combineReducers({
+    entities: todosReducer,
+    status: fetchingReducer,
+  }),
+  filter: filterReducer,
+})
+```
+
+En el código, `combineReducers` se usa para combinar `todosReducer` y `fetchingReducer` en un solo reducer `todos`, y luego combinarlo con `filterReducer`.
+
+#### 6. Uso de Hooks de React-Redux
+
+React-Redux proporciona hooks como `useDispatch` y `useSelector` para interactuar con el store de Redux dentro de componentes funcionales.
+
+```javascript
+const dispatch = useDispatch()
+const todos = useSelector(selectTodos)
+const status = useSelector(selectStatus)
+```
+
+Estos hooks simplifican la interacción con el store de Redux, permitiendo despachar acciones y seleccionar partes del estado de manera más limpia y sencilla.
+
+### High order reducer o make reducer
+
+Un **higher-order reducer** (reductor de orden superior) es un patrón en Redux que permite crear reducers más reutilizables y modulares. Se puede pensar en ellos de forma similar a los higher-order components (HOCs) en React. Básicamente, un higher-order reducer es una función que toma un reducer como argumento y devuelve un nuevo reducer con funcionalidad añadida.
+
+### ¿Por qué usar Higher-Order Reducers?
+
+1. **Reutilización de Código**: Puedes encapsular lógica común en higher-order reducers y aplicarla a múltiples reducers.
+2. **Modularidad**: Hace que tu lógica de reducción sea más modular y manejable.
+3. **Composición**: Permite componer múltiples funciones en una cadena, aplicando múltiples capas de transformación.
+
+### Ejemplo de Higher-Order Reducer
+
+Vamos a crear un higher-order reducer que añade manejo de estado de "pendiente" a cualquier reducer.
+
+#### Paso 1: Definir el Higher-Order Reducer
+
+```javascript
+const withLoadingState = (reducer) => {
+  const initialState = {
+    loading: false,
+    error: null,
+    data: reducer(undefined, {}),
+  };
+
+  return (state = initialState, action) => {
+    switch(action.type) {
+      case 'REQUEST_PENDING':
+        return { ...state, loading: true, error: null };
+      case 'REQUEST_FULFILLED':
+        return { ...state, loading: false, data: reducer(state.data, action) };
+      case 'REQUEST_ERROR':
+        return { ...state, loading: false, error: action.error };
+      default:
+        return { ...state, data: reducer(state.data, action) };
+    }
+  };
+};
+```
+
+Este higher-order reducer envuelve cualquier reducer y le añade manejo de estados de "pendiente", "completado" y "error".
+
+#### Paso 2: Aplicar el Higher-Order Reducer a un Reducer Existente
+
+Supongamos que tenemos un `todosReducer`:
+
+```javascript
+const todosReducer = (state = [], action) => {
+  switch(action.type) {
+    case 'todo/add':
+      return state.concat({ id: Math.random().toString(36), ...action.payload });
+    case 'todo/complete':
+      return state.map(todo => todo.id === action.payload.id ? { ...todo, completed: !todo.completed } : todo);
+    default:
+      return state;
+  }
+};
+```
+
+Aplicamos el higher-order reducer:
+
+```javascript
+const enhancedTodosReducer = withLoadingState(todosReducer);
+```
+
+Ahora `enhancedTodosReducer` manejará los estados de "pendiente", "completado" y "error" además de la lógica original del `todosReducer`.
+
+### Ejemplo Completo
+
+```javascript
+import { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { combineReducers } from 'redux'
+
+// Higher-Order Reducer
+const withLoadingState = (reducer) => {
+  const initialState = {
+    loading: false,
+    error: null,
+    data: reducer(undefined, {}),
+  };
+
+  return (state = initialState, action) => {
+    switch(action.type) {
+      case 'REQUEST_PENDING':
+        return { ...state, loading: true, error: null };
+      case 'REQUEST_FULFILLED':
+        return { ...state, loading: false, data: reducer(state.data, action) };
+      case 'REQUEST_ERROR':
+        return { ...state, loading: false, error: action.error };
+      default:
+        return { ...state, data: reducer(state.data, action) };
+    }
+  };
+};
+
+// Todos Reducer
+const todosReducer = (state = [], action) => {
+  switch(action.type) {
+    case 'todo/add':
+      return state.concat({ id: Math.random().toString(36), ...action.payload });
+    case 'todo/complete':
+      return state.map(todo => todo.id === action.payload.id ? { ...todo, completed: !todo.completed } : todo);
+    default:
+      return state;
+  }
+};
+
+// Enhanced Reducer with Loading State
+const enhancedTodosReducer = withLoadingState(todosReducer);
+
+// Filter Reducer
+const filterReducer = (state = 'all', action) => {
+  switch(action.type) {
+    case 'filter/set':
+      return action.payload;
+    default:
+      return state;
+  }
+};
+
+// Root Reducer
+const rootReducer = combineReducers({
+  todos: enhancedTodosReducer,
+  filter: filterReducer,
+});
+
+// Selectors
+const selectTodos = (state) => state.todos.data;
+const selectStatus = (state) => state.todos;
+
+// Component
+const TodoItem = ({ todo }) => {
+  const dispatch = useDispatch();
+  return (
+    <li
+      style={{ textDecoration: todo.completed ? 'line-through' : 'none' }}
+      key={todo.id}
+      onClick={() => dispatch({ type: 'todo/complete', payload: todo })}
+    >
+      {todo.title}
+    </li>
+  );
+};
+
+function App() {
+  const [value, setValue] = useState('');
+  const dispatch = useDispatch();
+  const todos = useSelector(selectTodos);
+  const status = useSelector(selectStatus);
+
+  const submit = (e) => {
+    e.preventDefault();
+    if (!value.trim()) {
+      return;
+    }
+    dispatch({ type: 'todo/add', payload: { title: value, completed: false } });
+    setValue('');
+  };
+
+  if (status.loading) {
+    return <p>Loading...</p>;
+  }
+
+  return (
+    <div>
+      <form onSubmit={submit}>
+        <input value={value} onChange={(e) => setValue(e.target.value)} />
+      </form>
+      <button onClick={() => dispatch({ type: 'filter/set', payload: 'all' })}>Todos</button>
+      <button onClick={() => dispatch({ type: 'filter/set', payload: 'complete' })}>Completados</button>
+      <button onClick={() => dispatch({ type: 'filter/set', payload: 'incomplete' })}>Incompletos</button>
+      <button onClick={() => dispatch(fetchThunk())}>Fetch</button>
+      <ul>
+        {todos.map((todo) => (
+          <TodoItem key={todo.id} todo={todo} />
+        ))}
+      </ul>
+      {status.error && <p>Error: {status.error}</p>}
+    </div>
+  );
+}
+
+export default App;
+```
+
+El concepto de higher-order reducers permite extender la funcionalidad de los reducers de una manera modular y reutilizable. Este patrón es útil para manejar lógica común, como estados de carga y error, y puede aplicarse a cualquier reducer para mantener el código limpio y organizado.
+
+### Reduce Reducers
+
+El concepto de `reduceReducers` en Redux es una técnica para combinar múltiples reducers en uno solo, de manera que cada reducer se ejecute en secuencia y contribuya a la creación del estado final. A diferencia de `combineReducers`, que delega la responsabilidad de diferentes partes del estado a diferentes reducers, `reduceReducers` permite que múltiples reducers actúen sobre el mismo estado, uno tras otro.
+
+### ¿Por qué usar Reduce Reducers?
+
+1. **Modularidad**: Permite dividir la lógica de manejo del estado en funciones más pequeñas y manejables.
+2. **Composición**: Permite componer múltiples reducers que pueden operar en el mismo estado.
+3. **Reutilización de Lógica**: Facilita la reutilización de lógica común en diferentes partes de la aplicación.
+
+### Ejemplo de Reduce Reducers
+
+Supongamos que queremos manejar el estado de autenticación y notificaciones en una aplicación. Cada reducer manejará una parte específica de la lógica.
+
+#### Paso 1: Definir Reducers Específicos
+
+```javascript
+const authReducer = (state = { isAuthenticated: false }, action) => {
+  switch(action.type) {
+    case 'LOGIN_SUCCESS':
+      return { ...state, isAuthenticated: true };
+    case 'LOGOUT':
+      return { ...state, isAuthenticated: false };
+    default:
+      return state;
+  }
+};
+
+const notificationsReducer = (state = { messages: [] }, action) => {
+  switch(action.type) {
+    case 'ADD_NOTIFICATION':
+      return { ...state, messages: state.messages.concat(action.payload) };
+    case 'CLEAR_NOTIFICATIONS':
+      return { ...state, messages: [] };
+    default:
+      return state;
+  }
+};
+```
+
+#### Paso 2: Combinar Reducers con Reduce Reducers
+
+Usaremos `reduceReducers` para combinar estos reducers:
+
+```javascript
+import reduceReducers from 'reduce-reducers';
+
+const rootReducer = reduceReducers(authReducer, notificationsReducer);
+```
+
+#### Paso 3: Usar el Root Reducer en la Aplicación
+
+Ahora podemos usar `rootReducer` en nuestra configuración de Redux.
+
+```javascript
+import { createStore } from 'redux';
+import { Provider, useDispatch, useSelector } from 'react-redux';
+
+const store = createStore(rootReducer);
+
+const App = () => {
+  const dispatch = useDispatch();
+  const state = useSelector(state => state);
+
+  const handleLogin = () => {
+    dispatch({ type: 'LOGIN_SUCCESS' });
+    dispatch({ type: 'ADD_NOTIFICATION', payload: 'User logged in!' });
+  };
+
+  const handleLogout = () => {
+    dispatch({ type: 'LOGOUT' });
+    dispatch({ type: 'ADD_NOTIFICATION', payload: 'User logged out!' });
+  };
+
+  const clearNotifications = () => {
+    dispatch({ type: 'CLEAR_NOTIFICATIONS' });
+  };
+
+  return (
+    <div>
+      <h1>Authentication and Notifications</h1>
+      <button onClick={handleLogin}>Login</button>
+      <button onClick={handleLogout}>Logout</button>
+      <button onClick={clearNotifications}>Clear Notifications</button>
+      <div>
+        <h2>State</h2>
+        <pre>{JSON.stringify(state, null, 2)}</pre>
+      </div>
+    </div>
+  );
+};
+
+const Root = () => (
+  <Provider store={store}>
+    <App />
+  </Provider>
+);
+
+export default Root;
+```
+
+### Implementación Personalizada de Reduce Reducers
+
+Si no quieres usar una librería externa, puedes implementar `reduceReducers` fácilmente:
+
+```javascript
+const reduceReducers = (...reducers) => (state, action) =>
+  reducers.reduce((acc, reducer) => reducer(acc, action), state);
+```
+
+### Ejemplo Completo
+
+```javascript
+import React from 'react';
+import { createStore } from 'redux';
+import { Provider, useDispatch, useSelector } from 'react-redux';
+
+const reduceReducers = (...reducers) => (state, action) =>
+  reducers.reduce((acc, reducer) => reducer(acc, action), state);
+
+const authReducer = (state = { isAuthenticated: false }, action) => {
+  switch(action.type) {
+    case 'LOGIN_SUCCESS':
+      return { ...state, isAuthenticated: true };
+    case 'LOGOUT':
+      return { ...state, isAuthenticated: false };
+    default:
+      return state;
+  }
+};
+
+const notificationsReducer = (state = { messages: [] }, action) => {
+  switch(action.type) {
+    case 'ADD_NOTIFICATION':
+      return { ...state, messages: state.messages.concat(action.payload) };
+    case 'CLEAR_NOTIFICATIONS':
+      return { ...state, messages: [] };
+    default:
+      return state;
+  }
+};
+
+const rootReducer = reduceReducers(authReducer, notificationsReducer);
+
+const store = createStore(rootReducer);
+
+const App = () => {
+  const dispatch = useDispatch();
+  const state = useSelector(state => state);
+
+  const handleLogin = () => {
+    dispatch({ type: 'LOGIN_SUCCESS' });
+    dispatch({ type: 'ADD_NOTIFICATION', payload: 'User logged in!' });
+  };
+
+  const handleLogout = () => {
+    dispatch({ type: 'LOGOUT' });
+    dispatch({ type: 'ADD_NOTIFICATION', payload: 'User logged out!' });
+  };
+
+  const clearNotifications = () => {
+    dispatch({ type: 'CLEAR_NOTIFICATIONS' });
+  };
+
+  return (
+    <div>
+      <h1>Authentication and Notifications</h1>
+      <button onClick={handleLogin}>Login</button>
+      <button onClick={handleLogout}>Logout</button>
+      <button onClick={clearNotifications}>Clear Notifications</button>
+      <div>
+        <h2>State</h2>
+        <pre>{JSON.stringify(state, null, 2)}</pre>
+      </div>
+    </div>
+  );
+};
+
+const Root = () => (
+  <Provider store={store}>
+    <App />
+  </Provider>
+);
+
+export default Root;
+```
+
+El patrón `reduceReducers` es una poderosa técnica en Redux para combinar múltiples reducers que operan en el mismo estado. Esto mejora la modularidad y la capacidad de reutilización de tu código, permitiéndote componer lógica de reducción de manera efectiva.
+
+### Action Creators en Redux
+
+Un **action creator** en Redux es una función que crea y devuelve una acción. En lugar de crear las acciones directamente en los componentes, los action creators permiten encapsular la creación de las acciones en funciones reutilizables y probables.
+
+### ¿Por qué usar Action Creators?
+
+1. **Reutilización**: Facilita la reutilización de la lógica de creación de acciones en diferentes partes de la aplicación.
+2. **Mantenibilidad**: Hace que el código sea más fácil de mantener al separar la lógica de creación de acciones de los componentes.
+3. **Testing**: Facilita la prueba de la lógica de acciones, ya que los action creators pueden ser probados de manera aislada.
+
+### Ejemplo de Action Creators
+
+Vamos a crear algunos action creators para una aplicación de gestión de tareas (todos).
+
+#### Paso 1: Definir Action Types
+
+Primero, definimos los tipos de acciones como constantes para evitar errores tipográficos y facilitar la refactorización.
+
+```javascript
+export const ADD_TODO = 'todo/add';
+export const COMPLETE_TODO = 'todo/complete';
+export const SET_FILTER = 'filter/set';
+export const TODOS_PENDING = 'todos/pending';
+export const TODOS_FULFILLED = 'todos/fulfilled';
+export const TODOS_ERROR = 'todos/error';
+```
+
+#### Paso 2: Crear Action Creators
+
+Ahora, creamos funciones que devuelvan las acciones correspondientes.
+
+```javascript
+// Action Creators
+export const addTodo = (title) => {
+  const id = Math.random().toString(36);
+  return {
+    type: ADD_TODO,
+    payload: { id, title, completed: false }
+  };
+};
+
+export const completeTodo = (id) => {
+  return {
+    type: COMPLETE_TODO,
+    payload: { id }
+  };
+};
+
+export const setFilter = (filter) => {
+  return {
+    type: SET_FILTER,
+    payload: filter
+  };
+};
+
+export const todosPending = () => {
+  return {
+    type: TODOS_PENDING
+  };
+};
+
+export const todosFulfilled = (todos) => {
+  return {
+    type: TODOS_FULFILLED,
+    payload: todos
+  };
+};
+
+export const todosError = (error) => {
+  return {
+    type: TODOS_ERROR,
+    error
+  };
+};
+```
+
+#### Paso 3: Uso de Action Creators en Componentes
+
+Actualizamos nuestros componentes para usar los action creators en lugar de crear las acciones directamente.
+
+```javascript
+import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { createSelector } from 'reselect';
+import { combineReducers } from 'redux';
+import { addTodo, completeTodo, setFilter, fetchThunk } from './actionCreators'; // Importamos los action creators
+
+const todosReducer = (state = [], action) => {
+  switch(action.type) {
+    case 'todos/fulfilled': {
+      return action.payload;
+    }
+    case 'todo/add':
+      return state.concat(action.payload);
+    case 'todo/complete':
+      return state.map(todo => todo.id === action.payload.id ? { ...todo, completed: !todo.completed } : todo);
+    default:
+      return state;
+  }
+};
+
+const filterReducer = (state = 'all', action) => {
+  switch(action.type) {
+    case 'filter/set':
+      return action.payload;
+    default:
+      return state;
+  }
+};
+
+const initialFetching = { loading: 'idle', error: null };
+
+const fetchingReducer = (state = initialFetching, action) => {
+  switch(action.type) {
+    case 'todos/pending':
+      return { ...state, loading: 'pending' };
+    case 'todos/fulfilled':
+      return { ...state, loading: 'succeeded' };
+    case 'todos/error':
+      return { error: action.error, loading: 'rejected' };
+    default:
+      return state;
+  }
+};
+
+const reducer = combineReducers({
+  todos: combineReducers({
+    entities: todosReducer,
+    status: fetchingReducer,
+  }),
+  filter: filterReducer,
+});
+
+const selectTodos = createSelector(
+  state => state.todos.entities,
+  state => state.todos.filter,
+  (todos, filter) => {
+    if (filter === 'complete') {
+      return todos.filter(todo => todo.completed);
+    }
+    if (filter === 'incomplete') {
+      return todos.filter(todo => !todo.completed);
+    }
+    return todos;
+  }
+);
+
+const selectStatus = state => state.todos.status;
+
+const TodoItem = ({ todo }) => {
+  const dispatch = useDispatch();
+  return (
+    <li
+      style={{ textDecoration: todo.completed ? 'line-through' : 'none' }}
+      key={todo.id}
+      onClick={() => dispatch(completeTodo(todo.id))} // Usamos el action creator
+    >
+      {todo.title}
+    </li>
+  );
+};
+
+function App() {
+  const [value, setValue] = useState('');
+  const dispatch = useDispatch();
+  const status = useSelector(selectStatus);
+  const todos = useSelector(selectTodos);
+
+  const submit = e => {
+    e.preventDefault();
+    if (!value.trim()) {
+      return;
+    }
+    dispatch(addTodo(value)); // Usamos el action creator
+    setValue('');
+  };
+
+  if (status.loading == 'pending') {
+    return <p>cargando...</p>;
+  }
+
+  return (
+    <div>
+      <form onSubmit={submit}>
+        <input value={value} onChange={e => setValue(e.target.value)} />
+      </form>
+      <button onClick={() => dispatch(setFilter('all'))}>Todos</button> // Usamos el action creator
+      <button onClick={() => dispatch(setFilter('complete'))}>Completados</button> // Usamos el action creator
+      <button onClick={() => dispatch(setFilter('incomplete'))}>Incompletos</button> // Usamos el action creator
+      <button onClick={() => dispatch(fetchThunk())}>Fetch</button>
+      <ul>
+        {todos.map(todo => <TodoItem key={todo.id} todo={todo} />)}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
+```
+
+Los **action creators** son funciones que encapsulan la creación de acciones, haciéndolas más reutilizables y fáciles de mantener. Al usar action creators, podemos separar la lógica de creación de acciones de nuestros componentes, lo que resulta en un código más limpio y modular.
