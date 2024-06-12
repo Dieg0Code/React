@@ -4169,3 +4169,464 @@ export default App;
 ```
 
 Los **action creators** son funciones que encapsulan la creación de acciones, haciéndolas más reutilizables y fáciles de mantener. Al usar action creators, podemos separar la lógica de creación de acciones de nuestros componentes, lo que resulta en un código más limpio y modular.
+
+### Action Creators Asíncronos en Redux
+
+Un **action creator asíncrono** en Redux permite manejar operaciones asíncronas, como solicitudes de red, de una manera estructurada. Para gestionar estas operaciones, utilizamos middlewares como `redux-thunk` o `redux-saga`. Aquí nos centraremos en `redux-thunk`, que permite escribir action creators que devuelven una función en lugar de una acción.
+
+### Tipos de Acciones Asíncronas
+
+Las acciones asíncronas suelen involucrar tres etapas:
+1. **Inicio de la solicitud**: Indica que una solicitud ha comenzado.
+2. **Éxito de la solicitud**: Indica que la solicitud se completó con éxito.
+3. **Error en la solicitud**: Indica que la solicitud falló.
+
+### Ejemplo de Action Creators Asíncronos
+
+#### Paso 1: Definir Tipos de Acciones
+
+Primero, definimos los tipos de acciones para cada etapa de la solicitud.
+
+```javascript
+// Tipos de acciones
+export const TODOS_PENDING = 'todos/pending';
+export const TODOS_FULFILLED = 'todos/fulfilled';
+export const TODOS_ERROR = 'todos/error';
+```
+
+#### Paso 2: Crear Action Creators Asíncronos
+
+Creamos action creators para manejar las acciones asíncronas utilizando `redux-thunk`.
+
+```javascript
+// Action creators asíncronos
+export const fetchTodosPending = () => ({
+  type: TODOS_PENDING
+});
+
+export const fetchTodosFulfilled = (todos) => ({
+  type: TODOS_FULFILLED,
+  payload: todos
+});
+
+export const fetchTodosError = (error) => ({
+  type: TODOS_ERROR,
+  error
+});
+
+export const fetchTodos = () => async (dispatch) => {
+  dispatch(fetchTodosPending());
+  try {
+    const response = await fetch('https://jsonplaceholder.typicode.com/todos');
+    const data = await response.json();
+    const todos = data.slice(0, 10); // Limitar a 10 tareas
+    dispatch(fetchTodosFulfilled(todos));
+  } catch (error) {
+    dispatch(fetchTodosError(error.message));
+  }
+};
+```
+
+#### Paso 3: Reducers para Manejar las Acciones Asíncronas
+
+Creamos los reducers necesarios para manejar los estados de las acciones asíncronas.
+
+```javascript
+const initialTodosState = {
+  entities: [],
+  status: {
+    loading: 'idle',
+    error: null
+  }
+};
+
+const todosReducer = (state = initialTodosState, action) => {
+  switch (action.type) {
+    case TODOS_PENDING:
+      return {
+        ...state,
+        status: {
+          ...state.status,
+          loading: 'pending'
+        }
+      };
+    case TODOS_FULFILLED:
+      return {
+        ...state,
+        entities: action.payload,
+        status: {
+          ...state.status,
+          loading: 'succeeded'
+        }
+      };
+    case TODOS_ERROR:
+      return {
+        ...state,
+        status: {
+          ...state.status,
+          loading: 'rejected',
+          error: action.error
+        }
+      };
+    default:
+      return state;
+  }
+};
+
+const filterReducer = (state = 'all', action) => {
+  switch(action.type) {
+    case 'filter/set':
+      return action.payload;
+    default:
+      return state;
+  }
+};
+
+const rootReducer = combineReducers({
+  todos: todosReducer,
+  filter: filterReducer
+});
+
+export default rootReducer;
+```
+
+#### Paso 4: Uso en Componentes
+
+Finalmente, utilizamos estos action creators asíncronos en nuestros componentes.
+
+```javascript
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { createSelector } from 'reselect';
+import { fetchTodos } from './actionCreators'; // Importamos los action creators
+
+const selectTodos = createSelector(
+  state => state.todos.entities,
+  state => state.filter,
+  (todos, filter) => {
+    if (filter === 'complete') {
+      return todos.filter(todo => todo.completed);
+    }
+    if (filter === 'incomplete') {
+      return todos.filter(todo => !todo.completed);
+    }
+    return todos;
+  }
+);
+
+const selectStatus = state => state.todos.status;
+
+const TodoItem = ({ todo }) => {
+  const dispatch = useDispatch();
+  return (
+    <li
+      style={{ textDecoration: todo.completed ? 'line-through' : 'none' }}
+      key={todo.id}
+      onClick={() => dispatch({ type: 'todo/complete', payload: { id: todo.id } })}
+    >
+      {todo.title}
+    </li>
+  );
+};
+
+function App() {
+  const [value, setValue] = useState('');
+  const dispatch = useDispatch();
+  const status = useSelector(selectStatus);
+  const todos = useSelector(selectTodos);
+
+  useEffect(() => {
+    dispatch(fetchTodos());
+  }, [dispatch]);
+
+  const submit = e => {
+    e.preventDefault();
+    if (!value.trim()) {
+      return;
+    }
+    dispatch({ type: 'todo/add', payload: { title: value, completed: false } });
+    setValue('');
+  };
+
+  if (status.loading === 'pending') {
+    return <p>Cargando...</p>;
+  }
+
+  if (status.loading === 'rejected') {
+    return <p>Error: {status.error}</p>;
+  }
+
+  return (
+    <div>
+      <form onSubmit={submit}>
+        <input value={value} onChange={e => setValue(e.target.value)} />
+      </form>
+      <button onClick={() => dispatch({ type: 'filter/set', payload: 'all' })}>Todos</button>
+      <button onClick={() => dispatch({ type: 'filter/set', payload: 'complete' })}>Completados</button>
+      <button onClick={() => dispatch({ type: 'filter/set', payload: 'incomplete' })}>Incompletos</button>
+      <ul>
+        {todos.map(todo => <TodoItem key={todo.id} todo={todo} />)}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
+```
+
+Los action creators asíncronos son esenciales para manejar operaciones asíncronas en Redux. Usando middlewares como `redux-thunk`, podemos crear funciones que despachen acciones en diferentes etapas de una solicitud. Esto ayuda a mantener la lógica de la aplicación organizada y a mejorar la experiencia del usuario mediante la gestión adecuada de los estados de carga y error.
+
+## Next.js
+
+NextJS es un framework de React que nos entrega diversas herramientas como la creación de paginas estáticas, server side rendering o híbridas. Soporta Typescript, smart bundling (solo se carga el código necesario), API routes, entre otras características.
+
+### Crear una aplicación de Next.js
+
+Para crear una nueva aplicación con Next.js debemos usar el siguiente comando:
+
+```bash
+npx create-next-app nombre-app
+```
+
+Esto instalará todas las dependencias necesarias y creará una estructura de carpetas básica para nuestra aplicación.
+
+### Estructura de carpetas de una aplicación de Next.js
+
+La estructura de carpetas de una aplicación de Next.js es similar a la de una aplicación de React, pero con algunas diferencias clave:
+
+1. **`/pages`**: Esta carpeta contiene las páginas de nuestra aplicación. Cada archivo en esta carpeta se convierte en una ruta accesible en nuestra aplicación.
+2. **`/public`**: Esta carpeta contiene archivos estáticos como imágenes, fuentes, etc. Estos archivos se pueden acceder directamente desde la raíz de la aplicación.
+3. **`/styles`**: Esta carpeta contiene archivos de estilos globales o específicos de componentes.
+4. **`/components`**: Esta carpeta contiene componentes reutilizables que se utilizan en diferentes partes de la aplicación.
+5. **`/api`**: Esta carpeta se utiliza para definir rutas de API. Las rutas definidas aquí se pueden acceder desde el lado del cliente y del servidor.
+
+### Páginas, Link y code splitting
+
+En Next.js, cada archivo en la carpeta `/pages` se convierte en una ruta accesible en nuestra aplicación. Por ejemplo, si creamos un archivo `about.js` en la carpeta `/pages`, la ruta `/about` estará disponible en nuestra aplicación.
+
+```javascript
+// pages/about.js
+const About = () => {
+  return <h1>About Page</h1>;
+};
+
+export default About;
+```
+
+Para navegar entre páginas en Next.js, podemos usar el componente `Link` de Next.js en lugar de `<a>` de HTML. Esto permite la precarga de la página siguiente, lo que mejora la velocidad de navegación.
+
+```javascript
+// pages/index.js
+import Link from 'next/link';
+
+const Home = () => {
+  return (
+    <div>
+      <h1>Home Page</h1>
+      <Link href="/about">
+        <a>About</a>
+      </Link>
+    </div>
+  );
+};
+
+export default Home;
+```
+
+Next.js utiliza el **code splitting** para dividir el código en diferentes bundles y cargar solo el código necesario para cada página. Esto mejora el rendimiento de la aplicación al reducir el tiempo de carga inicial.
+
+### Rutas Dinámicas
+
+En Next.js, podemos crear rutas dinámicas utilizando corchetes `[]` en el nombre del archivo en la carpeta `/pages`. Por ejemplo, si creamos un archivo `pages/post/[id].js`, podemos acceder a la ruta `/post/1`, `/post/2`, etc.
+
+```javascript
+// pages/post/[id].js
+import { useRouter } from 'next/router';
+
+const Post = () => {
+  const router = useRouter();
+  const { id } = router.query;
+
+  return <h1>Post: {id}</h1>;
+};
+
+export default Post;
+```
+
+Next usara el path para crear una ruta dinámica, en este caso `/post/[id]` y el id será el valor que se le pase en la url.
+
+En el archivo `[id].js` definimos el componente que se renderizará en la ruta dinámica, y podemos acceder al valor del parámetro dinámico utilizando `useRouter` de Next.js.
+
+### useIsMounted
+
+```javascript
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/router'
+
+const useIsMounted = () => {
+  const [loaded, setLoaded] = useState(false)
+  const router = useRouter()
+
+  useEffect(() => {
+    if(router.isReady) {
+      setLoaded(true)
+    }
+  }, [router.isReady])
+
+  return loaded
+}
+
+export default useIsMounted
+```
+
+Este hook `useIsMounted` nos permite saber si el componente está montado o no. Esto es útil para evitar errores al intentar actualizar el estado de un componente que ya no está montado.
+
+### Rutas dinámicas anidadas
+
+En Next.js, podemos crear rutas dinámicas anidadas utilizando corchetes `[]` en el nombre del archivo en la carpeta `/pages`. Por ejemplo, si creamos un archivo `pages/post/[id]/[comment].js`, podemos acceder a la ruta `/post/1/comment/2`, `/post/1/comment/3`, etc.
+
+```javascript
+// pages/post/[id]/[comment].js
+import { useRouter } from 'next/router';
+
+const Comment = () => {
+  const router = useRouter();
+  const { id, comment } = router.query;
+
+  return <h1>Post: {id}, Comment: {comment}</h1>;
+};
+
+export default Comment;
+```
+
+En el archivo `[comment].js` definimos el componente que se renderizará en la ruta dinámica anidada, y podemos acceder a los valores de los parámetros dinámicos utilizando `useRouter` de Next.js.
+
+El nombre de la carpeta define la ruta anidada, la convención es que el nombre este entre corchetes `[]`, luego dentro el nombre del archivo que será el valor de la ruta.
+
+### Componente Image
+
+Una de las ventajas de Next es que nos optimiza las imágenes antes de ser renderizadas, para ello podemos usar el componente `Image` de Next.js en lugar de la etiqueta `<img>` de HTML.
+
+```javascript
+import Image from 'next/image';
+
+const MyImage = () => {
+  return (
+    <Image
+      src="/image.jpg"
+      alt="My Image"
+      width={500}
+      height={300}
+    />
+  );
+};
+
+export default MyImage;
+```
+
+También podemos configurar el componente `Image` para que cargue imágenes de forma optimizada dependiendo del dispositivo y la resolución que esta cargando la aplicación.
+
+Por ejemplo:
+
+```javascript
+<Image
+  src="/image.jpg"
+  alt="My Image"
+  width={500}
+  height={300}
+  layout="responsive"
+/>
+
+<Image
+  src="/image.jpg"
+  alt="My Image"
+  width={500}
+  height={300}
+  layout="fill"
+/>
+
+```
+
+### Generar contenido estático - getStaticProps
+
+En Next.js, podemos generar contenido estático en tiempo de compilación utilizando la función `getStaticProps` en una página. Esto es útil para páginas que no cambian con frecuencia y no requieren datos en tiempo real.
+
+```javascript
+export const getStaticProps = async () => {
+  const data = await fetchData();
+  return {
+    props: {
+      data
+    }
+  };
+};
+
+const MyPage = ({ data }) => {
+  return <div>{data}</div>;
+};
+
+export default MyPage;
+```
+
+Cuando hacemos renderizado estático le indicamos a Next que todas las páginas que tengan la función `getStaticProps` deben ser renderizadas antes de ser servidas al cliente, es decir, que genera el HTML de la página antes de que siquiera ingresemos a la página, esto aumenta la velocidad de carga de la página.
+
+### getServersideProps
+
+En Next.js, podemos generar contenido en tiempo de ejecución utilizando la función `getServerSideProps` en una página. Esto es útil para páginas que requieren datos en tiempo real o que cambian con frecuencia.
+
+```javascript
+export const getServerSideProps = async () => {
+  const data = await fetchData();
+  return {
+    props: {
+      data
+    }
+  };
+};
+
+const MyPage = ({ data }) => {
+  return <div>{data}</div>;
+};
+
+export default MyPage;
+```
+
+Cuando hacemos renderizado en el servidor le indicamos a Next que la página se renderice en el servidor antes de ser servida al cliente, es decir, que genera el HTML de la página en el servidor y luego lo envía al cliente, esto es útil para páginas que requieren datos en tiempo real o que cambian con frecuencia.
+
+La diferencia entre `getStaticProps` y `getServerSideProps` es que el primero se renderiza en tiempo de compilación y el segundo en tiempo de ejecución.
+
+### Páginas estáticas dinámicas
+
+En Next.js, podemos generar páginas estáticas dinámicas utilizando la función `getStaticPaths` en una página. Esto es útil para páginas que tienen rutas dinámicas y cuyos datos no cambian con frecuencia.
+
+```javascript
+export const getStaticPaths = async () => {
+  const paths = [
+    { params: { id: '1' } },
+    { params: { id: '2' } },
+    { params: { id: '3' } }
+  ];
+  
+  return {
+    paths,
+    fallback: false
+  };
+};
+
+export const getStaticProps = async ({ params }) => {
+  const data = await fetchData(params.id);
+  return {
+    props: {
+      data
+    }
+  };
+};
+
+const MyPage = ({ data }) => {
+  return <div>{data}</div>;
+};
+
+export default MyPage;
+```
+
+En este ejemplo, `getStaticPaths` define las rutas dinámicas que se generarán en tiempo de compilación, y `getStaticProps` obtiene los datos para cada ruta dinámica. `fallback: false` indica que si se accede a una ruta no definida en `getStaticPaths`, se mostrará un error 404. Si se cambia a `fallback: true`, Next.js intentará generar la página en tiempo real.
